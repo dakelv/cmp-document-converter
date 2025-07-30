@@ -1,0 +1,9 @@
+# 1. Make changes to files
+# 2. Stage changes
+git add .
+
+# 3. Commit staged changes
+git commit -m "Your commit message"
+
+# 4. Push to GitHub
+git push origin main

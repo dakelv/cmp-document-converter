@@ -2,10 +2,12 @@
 
 ## PROJECT STRUCTURE ✅
 
-**Working Directory**: `cmp-document-converter-github/`
+**Working Directory**: `cmp-document-converter-github/` ⭐ **THIS IS THE CURRENT WORKING FOLDER** ⭐
 **Project Management**: GitHub version control
 **Main Files**: `cmp-document-converter.json` + `cmp-doc-converter.html`
 **Documentation**: `docs/` subfolder
+
+⚠️ **IMPORTANT**: Always work in the `cmp-document-converter-github` folder, not the root project folder.
 
 ## CURRENT STATUS: PRODUCTION READY ✅
 

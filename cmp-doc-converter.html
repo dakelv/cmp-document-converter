@@ -63,10 +63,50 @@
                     <div class="step-number">3</div>
                     <h3 class="step-title">Upload & Convert</h3>
                 </div>
+                <div class="alert alert-warning" style="margin-bottom: 1rem;">
+                    <strong>⚠️ Important:</strong> Only HTML files (.html, .htm) are accepted. Other file types will be rejected automatically.
+                </div>
                 <div class="input-group">
-                    <label for="document">Select the HTML document converted by pandoc from the LO Word
-                        document:</label>
-                    <input type="file" id="document" accept=".html,.htm">
+                    <label for="document">Upload your HTML document using one of the methods below:</label>
+                    <p style="margin: 0.5rem 0; color: #666; font-size: 0.9rem;">
+                        <strong>Method 1:</strong> Drag and drop your HTML file into the area below<br>
+                        <strong>Method 2:</strong> Click "Browse HTML Files" to select from your computer
+                    </p>
+                    
+                    <!-- Custom Drag & Drop File Area -->
+                    <div class="file-drop-zone" id="fileDropZone" 
+                         ondrop="handleDrop(event)" 
+                         ondragover="allowDrop(event)" 
+                         ondragleave="handleDragLeave(event)">
+                        <div class="drop-zone-content">
+                            <div class="drop-zone-icon">📁</div>
+                            <div class="drop-zone-text">
+                                <p><strong>Drag & Drop one HTML file here</strong></p>
+                                <p class="drop-zone-or">or</p>
+                                <button type="button" class="btn btn-secondary" onclick="triggerFileSelect()">
+                                    📂 Browse HTML Files
+                                </button>
+                            </div>
+                            <div class="drop-zone-hint">
+                                <small>Only HTML files (.html, .htm) are accepted</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden file input -->
+                    <input type="file" id="document" accept=".html,.htm" style="display: none;" title="Only HTML files (.html, .htm) are accepted">
+                    
+                    <!-- Selected file display -->
+                    <div id="selectedFileDisplay" style="display: none; margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px; border: 1px solid #c3e6cb;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <strong>📄 Selected file:</strong> <span id="selectedFileName"></span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelectedFile()">
+                                ❌ Clear
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <button class="btn btn-primary" onclick="convertDocument()">🚀 Convert Document</button>
             </div>
@@ -155,6 +195,108 @@
             }
         }
 
+        // Validate file type when file is selected
+        function validateFileType() {
+            const fileInput = document.getElementById('document');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const fileName = file.name.toLowerCase();
+                const allowedExtensions = ['.html', '.htm'];
+                const isValidFile = allowedExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!isValidFile) {
+                    log(`❌ Invalid file type: ${file.name}`);
+                    log(`⚠️ Only HTML files (.html, .htm) are allowed`);
+                    log(`💡 Please select an HTML file converted from your Word document`);
+                    
+                    // Clear the file input
+                    fileInput.value = '';
+                    
+                    // Hide selected file display
+                    hideSelectedFile();
+                    
+                    // Show error message
+                    alert(`Invalid file type!\n\nOnly HTML files (.html, .htm) are accepted.\n\nSelected file: ${file.name}\n\nPlease select an HTML file converted from your Word document.`);
+                    return false;
+                } else {
+                    log(`✅ Valid HTML file selected: ${file.name}`);
+                    showSelectedFile(file);
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Drag & Drop Functions
+        function allowDrop(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                
+                // Check file type
+                const fileName = file.name.toLowerCase();
+                const allowedExtensions = ['.html', '.htm'];
+                const isValidFile = allowedExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!isValidFile) {
+                    log(`❌ Invalid file type dropped: ${file.name}`);
+                    log(`⚠️ Only HTML files (.html, .htm) are allowed`);
+                    alert(`Invalid file type!\n\nOnly HTML files (.html, .htm) are accepted.\n\nDropped file: ${file.name}\n\nPlease drag an HTML file converted from your Word document.`);
+                    return;
+                }
+                
+                // Set file to hidden input
+                const fileInput = document.getElementById('document');
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                log(`✅ Valid HTML file dropped: ${file.name}`);
+                showSelectedFile(file);
+            }
+        }
+
+        function triggerFileSelect() {
+            document.getElementById('document').click();
+        }
+
+        function showSelectedFile(file) {
+            const display = document.getElementById('selectedFileDisplay');
+            const fileName = document.getElementById('selectedFileName');
+            
+            fileName.textContent = file.name;
+            display.style.display = 'block';
+        }
+
+        function hideSelectedFile() {
+            const display = document.getElementById('selectedFileDisplay');
+            display.style.display = 'none';
+        }
+
+        function clearSelectedFile() {
+            const fileInput = document.getElementById('document');
+            fileInput.value = '';
+            hideSelectedFile();
+            log('🗑️ File selection cleared');
+        }
+
         async function convertDocument() {
             const webhookUrl = document.getElementById('webhookUrl').value;
             const fileInput = document.getElementById('document');
@@ -162,6 +304,11 @@
 
             if (!webhookUrl || !fileInput.files[0]) {
                 log(MESSAGES.MISSING_FIELDS);
+                return;
+            }
+
+            // Validate file type before processing
+            if (!validateFileType()) {
                 return;
             }
 
@@ -485,6 +632,11 @@
         // Save webhook URL to localStorage
         document.getElementById('webhookUrl').addEventListener('change', function () {
             localStorage.setItem('webhookUrl', this.value);
+        });
+
+        // Validate file type immediately when file is selected
+        document.getElementById('document').addEventListener('change', function () {
+            validateFileType();
         });
 
         // Bulk download functionality using iframe method for better automation

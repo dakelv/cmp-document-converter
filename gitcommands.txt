@@ -1,9 +1,10 @@
-# 1. Make changes to files
-# 2. Stage changes
+# Always check status first
+git status
+
+# Pull to get latest
+git pull origin main
+
+# Make changes, then:
 git add .
-
-# 3. Commit staged changes
-git commit -m "Your commit message"
-
-# 4. Push to GitHub
+git commit -m "Description"
 git push origin main

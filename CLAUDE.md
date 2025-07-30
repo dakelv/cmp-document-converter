@@ -3,11 +3,13 @@
 ## PROJECT STRUCTURE ✅
 
 **Working Directory**: `cmp-document-converter-github/` ⭐ **THIS IS THE CURRENT WORKING FOLDER** ⭐
+**Symbolic Link**: `~/projects/my-project/n8n-cmp-workflow` → `cmp-document-converter-github/`
 **Project Management**: GitHub version control
 **Main Files**: `cmp-document-converter.json` + `cmp-doc-converter.html`
 **Documentation**: `docs/` subfolder
 
-⚠️ **IMPORTANT**: Always work in the `cmp-document-converter-github` folder, not the root project folder.
+⚠️ **CRITICAL**: Always work in the `cmp-document-converter-github` folder, not the root project folder.
+📍 **PERMANENT ACCESS**: Use symbolic link `~/projects/my-project/n8n-cmp-workflow/` for direct access.
 
 ## CURRENT STATUS: PRODUCTION READY ✅
 

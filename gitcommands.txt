@@ -8,3 +8,18 @@ git pull origin main
 git add .
 git commit -m "Description"
 git push origin main
+
+# to revert to a previous stable version:
+# See your commit history first:
+git log --oneline
+# Example output:
+# 6f6929b (HEAD -> main) Bad changes I want to undo
+# c976303 Good stable version I want back to
+# a123456 Even earlier commit
+
+# Revert the bad commit:
+git revert 6f6929b
+# This creates a new commit that undoes 6f6929b
+
+# Push the revert:
+git push origin main

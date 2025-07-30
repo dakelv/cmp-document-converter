@@ -1,0 +1,3233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMP Document Converter - Reorganized Instructions</title>
+
+    <!-- External stylesheets - reordered so SP-Global-2015.css loads last for proper .activity h2 styling -->
+    <link rel="stylesheet" type="text/css"
+        href="https://online.saskpolytech.ca/shared/sp-template/styles/SP-bootstrap-grid.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://online.saskpolytech.ca/shared/sp-template/styles/jquery-ui.min.css">
+
+    <!-- Modern documentation styles -->
+    <link rel="stylesheet" href="css/modern-docs.css">
+
+    <!-- SP-Global-2015.css loaded last to ensure .activity h2 styling takes precedence -->
+    <link rel="stylesheet" href="https://online.saskpolytech.ca/shared/sp-template/styles/SP-Global-2015.css">
+
+    <!-- External scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://online.saskpolytech.ca/shared/sp-template/scripts/jquery.ui.touch-punch.min.js"></script>
+    <script src="https://online.saskpolytech.ca/shared/sp-template/scripts/snippets/accordion.js"></script>
+    <script src="https://online.saskpolytech.ca/shared/sp-template/scripts/snippets/show_more.js"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+
+    <style>
+        /* Ultra-minimal custom styles that respect SP-Global-2015.css hierarchy */
+        /* NO font-size declarations to prevent overrides */
+
+        .quick-paths {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        /* Modern responsive buttons for path cards */
+        .btn-modern {
+            display: inline-block;
+            padding: 12px 24px;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+        }
+
+        .btn-modern:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ID path button - green theme with maximum contrast */
+        .btn-id {
+            background-color: #0d4f1c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-id:link {
+            background-color: #0d4f1c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-id:visited {
+            background-color: #0d4f1c !important;
+            color: #ffffff !important;
+        }
+
+        .btn-id:hover {
+            background-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-id:active {
+            background-color: #1e7e34 !important;
+            color: #ffffff !important;
+        }
+
+        /* CMP path button - blue theme with maximum contrast */
+        .btn-cmp {
+            background-color: #001845 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-cmp:link {
+            background-color: #001845 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-cmp:visited {
+            background-color: #001845 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-cmp:hover {
+            background-color: #007bff !important;
+            color: #ffffff !important;
+        }
+
+        .btn-cmp:active {
+            background-color: #0056b3 !important;
+            color: #ffffff !important;
+        }
+
+        .path-card {
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .path-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .id-path {
+            border-left: 4px solid #28a745;
+        }
+
+        .cmp-path {
+            border-left: 4px solid #007bff;
+        }
+
+        .emergency-ref {
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .quick-links a {
+            background: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            display: inline-block;
+            margin: 4px;
+        }
+
+        .quick-links a:hover {
+            background: #0056b3;
+            text-decoration: none;
+        }
+
+        .workflow-steps {
+            display: grid;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .step-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-content {
+            padding: 1.5rem;
+        }
+
+        .style-categories {
+            display: grid;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .style-group {
+            padding: 1.5rem;
+        }
+
+        .style-example {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .style-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .style-table th,
+        .style-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .style-table th {
+            font-weight: 600;
+            background-color: #2c3e50;
+            color: #ffffff;
+        }
+
+        .checklist {
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .checklist h3 {
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .checklist-items {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist-items li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .checklist-items li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+
+        .issue-categories {
+            display: grid;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .issue-section {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .issue-item {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .issue-item h4 {
+            color: #856404;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .code-block {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        /* Enhanced UX Features */
+
+        /* Quick Search Box */
+        .search-container {
+            position: sticky;
+            top: 60px;
+            background: white;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dee2e6;
+            z-index: 999;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 20px 12px 45px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat 15px center;
+            background-size: 20px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .search-result-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-to-top .progress-ring {
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            width: 66px;
+            height: 66px;
+            transform: rotate(-90deg);
+        }
+
+        .back-to-top .progress-ring circle {
+            fill: none;
+            stroke: #28a745;
+            stroke-width: 3;
+            stroke-dasharray: 201;
+            stroke-dashoffset: 201;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        /* Enhanced Code Blocks */
+        .code-block-enhanced {
+            position: relative;
+            margin: 1rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .code-language {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .copy-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #0056b3;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .code-block-enhanced .code-block {
+            margin: 0;
+            border-radius: 0;
+            border: none;
+        }
+
+        /* Interactive Checklists */
+        .checklist-enhanced {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .checklist-progress {
+            background: #f8f9fa;
+            border-radius: 20px;
+            height: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .checklist-progress-bar {
+            background: linear-gradient(90deg, #007bff, #28a745);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .checklist-stats {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin: 2px 0;
+        }
+
+        .checklist-item:hover {
+            background: #f8f9fa;
+        }
+
+        .checklist-item.completed {
+            background: #d4edda;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .checklist-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item.completed .checklist-checkbox {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .checklist-checkbox::after {
+            content: '✓';
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .checklist-item.completed .checklist-checkbox::after {
+            opacity: 1;
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            z-index: 1002;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .mobile-nav.active {
+            right: 0;
+        }
+
+        .mobile-nav-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-nav-item {
+            display: block;
+            padding: 12px 0;
+            color: #495057;
+            text-decoration: none;
+            border-bottom: 1px solid #f8f9fa;
+            font-weight: 500;
+        }
+
+        .mobile-nav-item:hover {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        /* Breadcrumb Navigation */
+        .breadcrumb {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: #6c757d;
+        }
+
+        /* Dark Mode Styles */
+        [data-theme="dark"] {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .search-container {
+            background: #2d2d2d;
+            border-bottom-color: #404040;
+        }
+
+        [data-theme="dark"] .search-box {
+            background-color: #3d3d3d;
+            border-color: #555;
+            color: #e0e0e0;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ccc"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
+        }
+
+        [data-theme="dark"] .search-box:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        [data-theme="dark"] .search-box::placeholder {
+            color: #aaa;
+        }
+
+        [data-theme="dark"] .search-results {
+            background: #3d3d3d;
+            border-color: #555;
+        }
+
+        [data-theme="dark"] .search-result-item {
+            border-bottom-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .search-result-item:hover {
+            background: #4d4d4d;
+        }
+
+        [data-theme="dark"] .search-highlight {
+            background: #ffc107;
+            color: #000;
+        }
+
+        [data-theme="dark"] .mobile-nav {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .mobile-nav-item {
+            color: #e0e0e0;
+            border-bottom-color: #404040;
+        }
+
+        [data-theme="dark"] .mobile-nav-item:hover {
+            color: #007bff;
+        }
+
+        [data-theme="dark"] .mobile-nav-close {
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .code-block-enhanced {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .code-header {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .code-block {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .checklist-enhanced {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .checklist-progress {
+            background: #404040;
+        }
+
+        [data-theme="dark"] .checklist-stats {
+            color: #aaa;
+        }
+
+        [data-theme="dark"] .checklist-item:hover {
+            background: #3d3d3d;
+        }
+
+        [data-theme="dark"] .checklist-item.completed {
+            background: #1e4d2b;
+        }
+
+        [data-theme="dark"] .checklist-checkbox {
+            border-color: #555;
+            background: #3d3d3d;
+        }
+
+        [data-theme="dark"] .checklist-item.completed .checklist-checkbox {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        [data-theme="dark"] .breadcrumb {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .breadcrumb a {
+            color: #66b3ff;
+        }
+
+        [data-theme="dark"] .breadcrumb-separator {
+            color: #aaa;
+        }
+
+        [data-theme="dark"] .path-card {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .emergency-ref {
+            background: #2d2d2d;
+            border-color: #ffc107;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .step-card {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .alert {
+            background: #2d2d2d;
+            border-left-color: #007bff;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .alert-info {
+            background: #1a2332;
+            border-left-color: #17a2b8;
+            color: #b8daff;
+        }
+
+        [data-theme="dark"] .alert-warning {
+            background: #332b1a;
+            border-left-color: #ffc107;
+            color: #fff3cd;
+        }
+
+        [data-theme="dark"] .alert-success {
+            background: #1a2e1a;
+            border-left-color: #28a745;
+            color: #d4edda;
+        }
+
+        [data-theme="dark"] .alert-danger {
+            background: #331a1a;
+            border-left-color: #dc3545;
+            color: #f8d7da;
+        }
+
+        [data-theme="dark"] .style-table {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .style-table th {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .style-table td {
+            border-bottom-color: #555;
+        }
+
+        [data-theme="dark"] .style-table tr:hover {
+            background: #3d3d3d;
+        }
+
+        [data-theme="dark"] .category-section {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .issue-section {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .issue-item {
+            background: #332b1a;
+            border-left-color: #ffc107;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .issue-item h4 {
+            color: #ffc107;
+        }
+
+        [data-theme="dark"] .header {
+            background: #2d2d2d;
+            border-bottom-color: #555;
+        }
+
+        [data-theme="dark"] .logo {
+            color: #66b3ff;
+        }
+
+        [data-theme="dark"] .logo:hover {
+            color: #99ccff;
+        }
+
+        [data-theme="dark"] .nav-item {
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .nav-item:hover {
+            background: #3d3d3d;
+            color: #66b3ff;
+        }
+
+        [data-theme="dark"] .dropdown-menu {
+            background: #2d2d2d;
+            border-color: #555;
+        }
+
+        [data-theme="dark"] .dropdown-menu a {
+            color: #e0e0e0;
+            border-bottom-color: #404040;
+        }
+
+        [data-theme="dark"] .dropdown-menu a:hover {
+            background: #3d3d3d;
+            color: #66b3ff;
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background: #3d3d3d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .theme-toggle:hover {
+            background: #4d4d4d;
+            border-color: #66b3ff;
+        }
+
+        [data-theme="dark"] .mobile-nav-toggle {
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .progress-container {
+            background: #2d2d2d;
+        }
+
+        [data-theme="dark"] .section-title h1,
+        [data-theme="dark"] .section-title h2 {
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .section-description {
+            color: #aaa;
+        }
+
+        [data-theme="dark"] .workflow-step {
+            background: #2d2d2d;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .workflow-step h3 {
+            color: #66b3ff;
+        }
+
+        [data-theme="dark"] .workflow-step h4 {
+            color: #e0e0e0;
+        }
+
+        [data-theme="dark"] .style-example {
+            background: #1a1a1a;
+        }
+
+        [data-theme="dark"] .quick-links a {
+            background: #007bff;
+            color: #fff;
+        }
+
+        [data-theme="dark"] .quick-links a:hover {
+            background: #0056b3;
+        }
+
+        [data-theme="dark"] code {
+            background: #3d3d3d;
+            color: #e0e0e0;
+            border: 1px solid #555;
+        }
+
+        [data-theme="dark"] pre {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #555;
+        }
+
+        [data-theme="dark"] blockquote {
+            background: #2d2d2d;
+            border-left-color: #007bff;
+            color: #e0e0e0;
+        }
+
+        /* IMPORTANT: Activity boxes (.activity) should NOT change with dark mode */
+        /* They represent the actual rendered output and must show true colors */
+        /* No dark mode overrides for .activity elements */
+
+        /* Explicitly protect activity h2 elements from dark mode styling */
+        /* Ensure activity titles maintain their original white background */
+        .activity h2 {
+            /* Force original styling regardless of theme */
+            background: white !important;
+            color: inherit !important;
+            /* Let SP-Global-2015.css handle the rest of the styling */
+        }
+
+        [data-theme="dark"] .activity h2 {
+            /* Maintain white background even in dark mode */
+            background: white !important;
+            color: inherit !important;
+            /* This ensures the original SP-Global-2015.css styling is preserved */
+        }
+
+        /* Dark Mode for other SP-Global elements */
+        [data-theme="dark"] .example-standout {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        [data-theme="dark"] .box-shadow {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="dark"] .calc-example-standout {
+            background: #1a2332 !important;
+            border-color: #17a2b8 !important;
+            color: #b8daff !important;
+        }
+
+        [data-theme="dark"] .msgHead {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        [data-theme="dark"] .accor_ref {
+            background: #1a2e1a !important;
+            border-color: #28a745 !important;
+            color: #d4edda !important;
+        }
+
+        [data-theme="dark"] .accor_ref h2 {
+            color: #ffffff !important;
+            background: rgba(40, 167, 69, 0.3) !important;
+        }
+
+        @media (max-width: 768px) {
+            .quick-paths {
+                grid-template-columns: 1fr;
+            }
+
+            .style-example {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-links {
+                flex-direction: column;
+            }
+
+            .nav-main {
+                display: none;
+            }
+
+            .mobile-nav-toggle {
+                display: block;
+            }
+
+            .search-box {
+                font-size: 16px;
+                /* Prevent zoom on iOS */
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+
+    <!-- Minimal Top Header with Navigation -->
+    <header class="header">
+        <div class="header-container">
+            <a href="#quick-start-hub" class="logo">
+                📋 CMP Document Converter
+            </a>
+
+            <nav class="nav-main">
+                <div class="nav-item-wrapper">
+                    <a href="#quick-start-hub" class="nav-item">🚀 Quick Start</a>
+                </div>
+                <div class="nav-item-wrapper">
+                    <a href="#id-workflow" class="nav-item">👩‍🏫 For IDs</a>
+                    <div class="dropdown-menu">
+                        <a href="#id-workflow">Complete ID Guide</a>
+                        <a href="#id-checklist">Quality Checklist</a>
+                    </div>
+                </div>
+                <div class="nav-item-wrapper">
+                    <a href="#cmp-workflow" class="nav-item">👨‍💻 For CMPs</a>
+                    <div class="dropdown-menu">
+                        <a href="#cmp-workflow">Complete CMP Guide</a>
+                        <a href="#cmp-checklist">Review Checklist</a>
+                    </div>
+                </div>
+                <div class="nav-item-wrapper">
+                    <a href="#style-reference" class="nav-item">🎨 Style Reference</a>
+                    <div class="dropdown-menu">
+                        <a href="#style-quick-ref">Quick Reference</a>
+                        <a href="#style-categories">By Category</a>
+                    </div>
+                </div>
+                <div class="nav-item-wrapper">
+                    <a href="#common-issues" class="nav-item">❓ Help & Support</a>
+                </div>
+            </nav>
+
+            <div class="nav-controls">
+                <button class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+                <button class="mobile-nav-toggle" aria-label="Open mobile menu">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Container -->
+    <div class="search-container">
+        <div class="content-container">
+            <div style="position: relative; max-width: 500px; margin: 0 auto;">
+                <input type="text" class="search-box" placeholder="Search style tags, examples, or topics..."
+                    id="searchInput">
+                <div class="search-results" id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="mobile-nav" id="mobileNav">
+        <button class="mobile-nav-close" id="mobileNavClose">×</button>
+        <a href="#quick-start-hub" class="mobile-nav-item">🚀 Quick Start</a>
+        <a href="#id-workflow" class="mobile-nav-item">👩‍🏫 Complete ID Guide</a>
+        <a href="#id-checklist" class="mobile-nav-item">📋 ID Quality Checklist</a>
+        <a href="#cmp-workflow" class="mobile-nav-item">👨‍💻 Complete CMP Guide</a>
+        <a href="#cmp-checklist" class="mobile-nav-item">✅ CMP Review Checklist</a>
+        <a href="#style-reference" class="mobile-nav-item">🎨 Style Reference</a>
+        <a href="#style-quick-ref" class="mobile-nav-item">📋 Quick Reference</a>
+        <a href="#common-issues" class="mobile-nav-item">❓ Help & Support</a>
+    </nav>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <svg class="progress-ring" width="66" height="66">
+            <circle cx="33" cy="33" r="32"></circle>
+        </svg>
+        ↑
+    </button>
+
+    <!-- Main Content -->
+    <main class="main main-top-nav">
+        <div class="content-container">
+
+            <!-- Quick Start Hub -->
+            <section class="content-section" id="quick-start-hub">
+                <div class="section-header">
+                    <div class="section-icon">🚀</div>
+                    <div class="section-title">
+                        <h1>Quick Start</h1>
+                        <p class="section-description">Choose your role and get started immediately</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>📋 About This System:</strong> The CMP Document Converter transforms Instructional
+                    Designers' Learning Outcome (LO) Word documents into multiple HTML files ready for Brightspace.
+                    Choose your role below to get started.
+                </div>
+
+                <!-- Role-based quick paths -->
+                <div class="quick-paths">
+                    <div class="path-card id-path">
+                        <h3>👩‍🏫 I'm an Instructional Designer</h3>
+                        <p><strong>Goal:</strong> Format an LO Word document and hand over to CMPs for conversion</p>
+                        <p><strong>Quick Steps:</strong></p>
+                        <ol>
+                            <li>Use <strong>X.Y.Z headings</strong> with H1 style (e.g., 1.0.0, 1.1.0)</li>
+                            <li>Wrap content with <code>[[style:type]]</code> tags</li>
+                            <li>Use <code>[[style:note]]</code> to leave notes for CMPs</li>
+                            <li>Run through quality checklist before sending</li>
+                        </ol>
+                        <a href="#id-workflow" class="btn-modern btn-id">Complete ID Guide →</a>
+                    </div>
+
+                    <div class="path-card cmp-path">
+                        <h3>👨‍💻 I'm a Course Material Publisher</h3>
+                        <p><strong>Goal:</strong> Convert and process documents for Brightspace</p>
+                        <p><strong>Quick Steps:</strong></p>
+                        <ol>
+                            <li><a href="#pandoc-setup">Install Pandoc</a> (one-time setup)</li>
+                            <li>Convert the LO Word document to HTML:
+                                <code>pandoc input.docx -s -o output.html --extract-media=. --ascii</code></li>
+                            <li>Upload HTML to web converter</li>
+                            <li>Review, insert media, and finalize files</li>
+                        </ol>
+                        <a href="#cmp-workflow" class="btn-modern btn-cmp">Complete CMP Guide →</a>
+                    </div>
+                </div>
+
+                <!-- Emergency quick reference -->
+                <div class="emergency-ref">
+                    <h4>🆘 Need Something Quick?</h4>
+                    <div class="quick-links">
+                        <a href="#style-quick-ref">Style Tags Cheat Sheet</a>
+                        <a href="#heading-examples">Heading Examples</a>
+                        <a href="#common-issues">Common Problems</a>
+                        <a href="#pandoc-command">Pandoc Command</a>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <h4>🎯 End Result</h4>
+                    <p>One Word document becomes multiple HTML files ready for Brightspace upload, with proper styling,
+                        interactive elements, and Learning Technologies global stylesheet (version 2015).</p>
+                </div>
+            </section>
+
+            <!-- Complete ID Workflow -->
+            <section class="content-section" id="id-workflow">
+                <div class="section-header">
+                    <div class="section-icon">👩‍🏫</div>
+                    <div class="section-title">
+                        <h2>Complete Guide for Instructional Designers</h2>
+                        <p class="section-description">Everything you need to format Word documents for conversion</p>
+                    </div>
+                </div>
+
+                <div class="workflow-steps">
+                    <div class="step-card">
+                        <h3>Step 1: Document Structure Setup</h3>
+                        <div class="step-content">
+                            <div class="alert alert-warning">
+                                <strong>⚠️ Critical:</strong>
+                                <ul>
+                                    <li>Your Word document must use the X.Y.Z heading pattern with <strong>Heading 1
+                                            (H1) style</strong> for automatic section detection. </li>
+                                    <li>Use Word's default styles and avoid creating or applying custom styles.
+                                    </li>
+                                    <li>While you can use Word's comment feature to communicate with the SME, the
+                                        comments will not show up in the converted HTML document. Use the
+                                        [[style:note]]...[[/style]] tag to leave notes to CMPs.</li>
+                                </ul>
+                            </div>
+
+                            <h4 id="heading-examples">📝 Heading Pattern Examples</h4>
+                            <table class="style-table">
+                                <thead>
+                                    <tr>
+                                        <th>Word Document Section Heading</th>
+                                        <th>Generated HTML Heading</th>
+                                        <th>Generated Filename</th>
+                                        <th>File Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>1.0.0</strong><br><em>or</em><br><strong>LO1 Introduction to
+                                                Leadership</strong></td>
+                                        <td>1. Introduction to Leadership</td>
+                                        <td>01_00_00_introduction_to_leadership.html</td>
+                                        <td>Learning Outcome</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>1.1.0 Getting Started</strong></td>
+                                        <td>Step 1: Getting Started</td>
+                                        <td>01_01_00_getting_started.html</td>
+                                        <td>Learning Step</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>1.1.1 Discussion: What is Leadership?</strong></td>
+                                        <td>1.1 Discussion: What is Leadership?</td>
+                                        <td>01_01_01_discussion_what_is_leadership.html</td>
+                                        <td>Learning Activity</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>LO Summary: Course Summary</strong></td>
+                                        <td>LO Summary: Course Summary</td>
+                                        <td>01_00_00_summary.html</td>
+                                        <td>LO Summary</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!--<div class="alert alert-info">
+                                <strong>💡 Pro Tips:</strong>
+                                <ul>
+                                    <li>Always include an LO Summary section at the end</li>
+                                    <li>Use descriptive titles after the numbers (e.g., "1.1.0 Getting Started")</li>
+                                    <li>Ensure every heading has content underneath it</li>
+                                    <li>Keep heading titles concise but descriptive</li>
+                                </ul>
+                            </div> <//-->
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <h3>Step 2: Format LO Word document with Style Tags</h3>
+                        <div class="step-content">
+                            <p>Style tags transform plain content into elements automatically styled with the global
+                                stylesheet. Always use the format:</p>
+                            <div class="code-block">
+                                <p>[[style:type]]</p>
+                                <p>content goes here</p>
+                                <p>[[/style]]</p>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>💡 Pro Tips:</strong>
+                                <ul>
+                                    <li>Always place the opening and closing tags in separate paragraphs as shown above.
+                                    </li>
+                                    <li>Ensure that opening and closing tags are enclosed in double square brackets -
+                                        [[...]]</li>
+
+                                </ul>
+                            </div>
+
+                            <h4>🎯 Style Tag Examples</h4>
+                            <div class="alert alert-info">
+                                <strong>💡 Note:</strong>
+                                <p>
+                                    The rendered output examples below may not exactly match how the HTML will appear
+                                    when uploaded to Brightspace.
+
+                                </p>
+                            </div>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📖 Reading Assignment</h5>
+                                    <div class="code-block">
+                                        <p>[[style:read]]</p>
+
+                                        <p>Read Chapter 3: "Introduction to Project Management" in your textbook (pages
+                                            45-67).</p>
+
+                                        <p>Pay special attention to the section on stakeholder analysis.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered Output</h5>
+                                    <div class="activity sand">
+                                        <h2>Read</h2>
+                                        <p>Read Chapter 3: "Introduction to Project Management" in your textbook (pages
+                                            45-67).</p>
+                                        <p>Pay special attention to the section on stakeholder analysis.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="style-example">
+                                <div>
+                                    <h5>💬 Discussion Forum</h5>
+                                    <div class="code-block">
+                                        <p>[[style:discussion]]</p>
+
+                                        <p>Discussion Forum: Leadership Styles</p>
+
+                                        <p>Initial Post Due: Wednesday by 11:59 PM<br>
+                                            Replies Due: Sunday by 11:59 PM</p>
+
+                                        <p>Which leadership style do you think is most effective in today's workplace?
+                                        </p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered Output</h5>
+                                    <div class="activity green">
+                                        <h2>Discussion</h2>
+                                        <p><strong>Discussion Forum: Leadership Styles</strong></p>
+                                        <p><strong>Initial Post Due:</strong> Wednesday by 11:59 PM<br>
+                                            <strong>Replies Due:</strong> Sunday by 11:59 PM
+                                        </p>
+                                        <p>Which leadership style do you think is most effective in today's workplace?
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p><a href="#style-reference">→ See complete style reference with all available tags</a></p>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <h3>Step 3: CMP Communication Guidelines</h3>
+                        <div class="step-content">
+                            <div class="alert alert-warning">
+                                <strong>⚠️ Important:</strong> Word comments don't convert with Pandoc. Use
+                                <code>[[style:note]]</code> to leave notes to CMPs.
+                            </div>
+
+                            <h4>📝 Communication Best Practices</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>✅ Correct Way (Converts)</h5>
+                                    <div class="code-block">
+                                        <p>[[style:note]]</p>
+
+                                        <p>CMP: Please replace this placeholder with the leadership styles infographic
+                                            we discussed. The file should be named "leadership-styles-v2.png" and
+                                            include alt text: "Comparison of four leadership styles: autocratic,
+                                            democratic, laissez-faire, and transformational"</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>❌ Wrong Way (Doesn't Convert)</h5>
+                                    <p style="background: #f8d7da; padding: 1rem; border-radius: 4px; color: #721c24;">
+                                        Using Word's comment feature - this will be lost during conversion!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- <h4>💡 Communication Guidelines</h4>
+                            <ul>
+                                <li><strong>Be specific:</strong> Include exact file names, dimensions, alt text</li>
+                                <li><strong>Provide context:</strong> Explain why the media is needed</li>
+                                <li><strong>Include deadlines:</strong> When do you need this completed?</li>
+                                <li><strong>Reference learning objectives:</strong> How does this support learning?</li>
+                            </ul>
+                        </div>//-->
+                        </div>
+
+                        <div class="step-card">
+                            <h3>Step 4: Quality Check Before Submission</h3>
+                            <div class="step-content">
+                                <p>Use this checklist before sending your document to the CMP:</p>
+                                <p><a href="#id-checklist">→ Go to complete ID Quality Checklist</a></p>
+
+                                <div class="alert alert-success">
+                                    <strong>🎯 Ready to Submit?</strong> Once you've completed the checklist, save your
+                                    Word document and send it to your CMP with any additional context or special
+                                    instructions.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+            <!-- Complete CMP Workflow -->
+            <section class="content-section" id="cmp-workflow">
+                <div class="section-header">
+                    <div class="section-icon">👨‍💻</div>
+                    <div class="section-title">
+                        <h2>Complete Guide for Course Material Publishers</h2>
+                        <p class="section-description">Everything you need to convert and process documents</p>
+                    </div>
+                </div>
+
+                <div class="workflow-steps">
+                    <div class="step-card">
+                        <h3>Step 1: One-Time Setup</h3>
+                        <div class="step-content" id="pandoc-setup">
+                            <h4>📥 Pandoc Installation</h4>
+                            <p><strong>Pandoc is required</strong> to convert Word documents to HTML. Pandoc is the
+                                recommended Word-to-HTML converter because it produces clean, semantic HTML code. This
+                                is a one-time setup.</p>
+
+                            <h5>🪟 Windows Installation (Recommended)</h5>
+                            <ol>
+                                <li>Visit <a href="https://pandoc.org/installing.html"
+                                        target="_blank">https://pandoc.org/installing.html</a></li>
+                                <li>Download the Windows installer (.msi file)</li>
+                                <li>Run installer with administrator privileges</li>
+                                <li>Restart your command prompt or PowerShell</li>
+                            </ol>
+
+                            <h5>🍎 macOS Installation</h5>
+                            <div class="code-block">brew install pandoc</div>
+                            <p>Or download the .pkg installer from the Pandoc website.</p>
+
+                            <h5>✅ Verify Installation</h5>
+                            <p>Open terminal/command prompt and run:</p>
+                            <div class="code-block" id="pandoc-command">pandoc --version</div>
+                            <p>You should see version information. If you get "command not found", restart your
+                                terminal.</p>
+
+                            <div class="alert alert-info">
+                                <strong>💡 Troubleshooting:</strong>
+                                <ul>
+                                    <li><strong>Command not found:</strong> Restart terminal or add Pandoc to system
+                                        PATH</li>
+                                    <li><strong>Permission denied:</strong> Run installation with admin privileges</li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <h3>Step 2: Document Conversion</h3>
+                        <div class="step-content">
+                            <div class="alert alert-info">
+                                <strong>💡 Windows Tip:</strong> For easier navigation, install the PowerShell context
+                                menu registry file: <a href="media/PowerShell_here_as_administrator_context_menu.reg"
+                                    download><code>PowerShell_here_as_administrator_context_menu.reg</code></a>. This
+                                adds "Open PowerShell here as Administrator" to your right-click context menu, making it
+                                easy to open PowerShell directly in any folder to run pandoc commands.
+                            </div>
+
+                            <h4>🔄 Conversion Process</h4>
+                            <ol>
+                                <li><strong>Navigate to document folder:</strong> Open terminal/command prompt in the
+                                    folder containing your .docx file (or use the PowerShell context menu if installed)
+                                </li>
+                                <li><strong>Run conversion command:</strong></li>
+                            </ol>
+
+                            <div class="code-block">pandoc input.docx -s -o output.html --extract-media=. --ascii</div>
+                            <p>Replace <code>input.docx</code> and <code>output.html</code> with your LO Word document
+                                name and preferred HTML filename, respectively.</p>
+                            <h4>📋 Command Breakdown</h4>
+                            <ul>
+                                <li><code>input.docx</code> - Your Word document filename</li>
+                                <li><code>-s</code> - Standalone HTML document</li>
+                                <li><code>-o output.html</code> - Output filename</li>
+                                <li><code>--extract-media=.</code> - Extract images to a <code>media</code> subfolder
+                                    within the current directory
+                            </ul>li>
+                            <li><code>--ascii</code> - Use ASCII encoding for compatibility</li>
+                            </ul>
+
+                            <h4>✅ Expected Results</h4>
+                            <p>After conversion, you should have:</p>
+                            <ul>
+                                <li><strong>output.html</strong> - The converted HTML file</li>
+                                <li><strong>media folder</strong> - Contains extracted images (if any)</li>
+                                <li><strong>No error messages</strong> - Clean conversion</li>
+                            </ul>
+
+                            <div class="alert alert-warning">
+                                <strong>⚠️ Common Issues:</strong>
+                                <ul>
+                                    <li><strong>File not found:</strong> Check filename and path</li>
+                                    <li><strong>Permission denied:</strong> Ensure you have write access to the folder
+                                    </li>
+                                    <li><strong>Encoding errors:</strong> The --ascii flag usually resolves these</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <h3>Step 3: Processing the Pandoc-Generated HTML</h3>
+                        <p>Pandoc converts the LO Word document to a single HTML document with no CSS styles applied.
+                            You need to use the CMP Document Converter to split the HTML into individual HTML documents
+                            with the global CSS stylesheet applied.</p>
+                        <div class="step-content">
+                            <h4>🌐 Using the CMP Document Converter</h4>
+                            <ol>
+                                <li><strong>Open the <a href="https://ltxr.saskpolytech.ca/apps/cmp-doc-converter.html"
+                                            target="_new"> CMP Document Converter</strong> web interface</a></li>
+                                <li>Skip Step 2: <strong>Test Connection.</strong></li>
+                                <li><strong>Upload your HTML file</strong> (the output.html from Step 2) and click
+                                    <strong>Convert Document</strong></li>
+                                <li><strong>Wait for processing</strong> - The system will:
+                                    <ul>
+                                        <li>Parse the document structure</li>
+                                        <li>Apply style transformations</li>
+                                        <li>Generate individual section files</li>
+                                        <li>Create media request file (if applicable)</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Preview and Download the generated files</strong> - You can scroll down to
+                                    the bottom to preview the generated HTML files. If the results are satisfactory, you
+                                    can download the TAR archive with all HTML files</li>
+                                <li>Right-click the TAR archive file and extract all HTML files to a folder of your
+                                    choice. If the ID's LO Word document contains images, the image links will be broken
+                                    in the individual HTML files. To fix this, copy the <code>media</code> folder
+                                    created by Pandoc to the same directory where you extracted the TAR archive.</li>
+                            </ol>
+
+                            <h4>📁 Expected Output</h4>
+                            <p>The web converter generates:</p>
+                            <ul>
+                                <li><strong>Individual HTML files</strong> - One for each H1 section</li>
+                                <li><strong>Media requests file</strong> - Contains all [[style:request]] content</li>
+                                <li><strong>Proper naming</strong> - Files follow the 01_02_03_title.html convention
+                                </li>
+                                <li><strong>Learning Technologies global style</strong> - Global styles will be applied
+                                    automatically</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step-card">
+                        <h3>Step 4: Quality Review & Finalization</h3>
+                        <div class="step-content">
+                            <div class="alert alert-danger">
+                                <strong>⚠️ Critical:</strong> Generated files are NOT ready for Brightspace upload
+                                immediately. They require review and media insertion.
+                            </div>
+
+                            <h4>🔍 Review Process</h4>
+                            <ol>
+                                <li><strong>Open each HTML file</strong> in a web browser</li>
+                                <li><strong>Check formatting</strong> - Verify all style tags rendered correctly</li>
+                                <li><strong>Test functionality</strong> - Ensure interactive elements work</li>
+                                <li><strong>Verify content accuracy</strong> - Compare with original Word document</li>
+
+                            </ol>
+
+                            <h4>🖼️ Media Integration</h4>
+                            <p>Replace all media request placeholders with actual content:</p>
+                            <ul>
+                                <li><strong>Images:</strong> Add proper alt text and citations</li>
+                                <li><strong>Videos:</strong> Embed with proper controls and captions</li>
+                                <li><strong>Interactive elements:</strong> Test functionality thoroughly</li>
+                                <li><strong>Links:</strong> Verify all external links work</li>
+                            </ul>
+
+                            <p><a href="#cmp-checklist">→ Use the complete CMP Review Checklist</a></p>
+
+                            <div class="alert alert-success">
+                                <strong>🎯 Ready for Brightspace?</strong> Only after completing the full review
+                                checklist and inserting all media content should you upload files to Brightspace.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Style Reference -->
+            <section class="content-section" id="style-reference">
+                <div class="section-header">
+                    <div class="section-icon">🎨</div>
+                    <div class="section-title">
+                        <h2>Complete Style Reference</h2>
+                        <p class="section-description">All available style tags organized by purpose</p>
+                    </div>
+                </div>
+
+                <!-- Quick reference table -->
+                <div class="style-quick-ref" id="style-quick-ref">
+                    <h3>📋 Quick Reference Table</h3>
+                    <table class="style-table">
+                        <thead>
+                            <tr>
+                                <th>Style Tag</th>
+                                <th>Purpose</th>
+                                <th>Color</th>
+                                <th>Best Used For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>read</code></td>
+                                <td>Reading assignments</td>
+                                <td>Sand</td>
+                                <td>Textbook chapters, articles</td>
+                            </tr>
+                            <tr>
+                                <td><code>watch</code></td>
+                                <td>Video content</td>
+                                <td>Sand</td>
+                                <td>Lecture videos, tutorials</td>
+                            </tr>
+                            <tr>
+                                <td><code>activity</code></td>
+                                <td>Learning activities</td>
+                                <td>Sand</td>
+                                <td>Exercises, reflections</td>
+                            </tr>
+                            <tr>
+                                <td><code>assignment</code></td>
+                                <td>Formal assignments</td>
+                                <td>Sand</td>
+                                <td>Projects, papers, reports</td>
+                            </tr>
+                            <tr>
+                                <td><code>discussion</code></td>
+                                <td>Discussion forums</td>
+                                <td>Green</td>
+                                <td>Forum posts, debates</td>
+                            </tr>
+                            <tr>
+                                <td><code>post</code></td>
+                                <td>Social posts</td>
+                                <td>Green</td>
+                                <td>Blog posts, reflections</td>
+                            </tr>
+                            <tr>
+                                <td><code>reference</code></td>
+                                <td>Citations & sources</td>
+                                <td>Collapsible</td>
+                                <td>Bibliography, sources</td>
+                            </tr>
+                            <tr>
+                                <td><code>transcript</code></td>
+                                <td>Text alternatives</td>
+                                <td>Expandable</td>
+                                <td>Video transcripts, captions</td>
+                            </tr>
+                            <tr>
+                                <td><code>standout</code></td>
+                                <td>Important info</td>
+                                <td>Highlighted</td>
+                                <td>Key concepts, warnings</td>
+                            </tr>
+                            <tr>
+                                <td><code>image</code></td>
+                                <td>Images with citations</td>
+                                <td>Figure</td>
+                                <td>Diagrams, photos</td>
+                            </tr>
+                            <tr>
+                                <td><code>code</code></td>
+                                <td>Programming code</td>
+                                <td>Syntax highlighted</td>
+                                <td>Code examples, scripts</td>
+                            </tr>
+                            <tr>
+                                <td><code>request</code></td>
+                                <td>Media requests</td>
+                                <td>Extracted</td>
+                                <td>CMP media instructions</td>
+                            </tr>
+                            <tr>
+                                <td><code>note</code></td>
+                                <td>CMP communication</td>
+                                <td>Placeholder</td>
+                                <td>Instructions to CMPs</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Organized by category -->
+                <div class="style-categories" id="style-categories">
+                    <div class="category-section">
+                        <h3>📚 Learning Activities (Sand Background)</h3>
+                        <div class="style-group">
+                            <h4>📖 Read Activity</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:read]]</p>
+
+                                        <p>Read Chapter 3: "Introduction to Project Management" in your textbook (pages
+                                            45-67).</p>
+
+                                        <p>Pay special attention to:</p>
+                                        <p>• Stakeholder analysis techniques<br>
+                                            • Project lifecycle phases<br>
+                                            • Risk management strategies</p>
+
+                                        <p>Complete the chapter review questions at the end.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity sand">
+                                        <h2>Read</h2>
+                                        <p>Read Chapter 3: "Introduction to Project Management" in your textbook (pages
+                                            45-67).</p>
+                                        <p>Pay special attention to:</p>
+                                        <ul>
+                                            <li>Stakeholder analysis techniques</li>
+                                            <li>Project lifecycle phases</li>
+                                            <li>Risk management strategies</li>
+                                        </ul>
+                                        <p>Complete the chapter review questions at the end.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>📺 Watch Activity</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:watch]]</p>
+
+                                        <p>Watch: "Effective Team Communication" (15 minutes)</p>
+
+                                        <p>[Video will be embedded here by CMP]</p>
+
+                                        <p>While watching, take notes on:</p>
+                                        <p>1. The five communication barriers discussed<br>
+                                            2. Strategies for virtual team meetings<br>
+                                            3. Examples of effective feedback techniques</p>
+
+                                        <p>You'll need these notes for the upcoming discussion forum.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity sand">
+                                        <h2>Watch</h2>
+                                        <p><strong>Watch:</strong> "Effective Team Communication" (15 minutes)</p>
+                                        <p>[Video will be embedded here by CMP]</p>
+                                        <p>While watching, take notes on:</p>
+                                        <ol>
+                                            <li>The five communication barriers discussed</li>
+                                            <li>Strategies for virtual team meetings</li>
+                                            <li>Examples of effective feedback techniques</li>
+                                        </ol>
+                                        <p>You'll need these notes for the upcoming discussion forum.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>🎯 Activity</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:activity]]</p>
+
+                                        <p>Reflection Exercise: Leadership Experience</p>
+
+                                        <p>Think about a time when you were in a leadership role (formal or informal).
+                                        </p>
+
+                                        <p>Write a 300-word reflection addressing:</p>
+                                        <p>• What leadership style did you use?<br>
+                                            • What challenges did you face?<br>
+                                            • What would you do differently?<br>
+                                            • How does this connect to the course concepts?</p>
+
+                                        <p>Submit your reflection to the discussion forum by Wednesday.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity sand">
+                                        <h2>Activity</h2>
+                                        <p><strong>Reflection Exercise: Leadership Experience</strong></p>
+                                        <p>Think about a time when you were in a leadership role (formal or informal).
+                                        </p>
+                                        <p>Write a 300-word reflection addressing:</p>
+                                        <ul>
+                                            <li>What leadership style did you use?</li>
+                                            <li>What challenges did you face?</li>
+                                            <li>What would you do differently?</li>
+                                            <li>How does this connect to the course concepts?</li>
+                                        </ul>
+                                        <p>Submit your reflection to the discussion forum by Wednesday.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>📋 Assignment</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:assignment]]</p>
+
+                                        <p>Assignment 2: Case Study Analysis</p>
+
+                                        <p>Due: Week 6, Friday by 11:59 PM<br>
+                                            Weight: 25% of final grade<br>
+                                            Length: 1,500-2,000 words</p>
+
+                                        <p>Instructions:<br>
+                                            Analyze the "Northern Manufacturing Ltd." case study using the frameworks
+                                            discussed in class.</p>
+
+                                        <p>Your analysis must include:</p>
+                                        <p>1. Problem identification and root cause analysis<br>
+                                            2. Three alternative solutions with pros/cons<br>
+                                            3. Recommended solution with detailed justification<br>
+                                            4. Implementation timeline and resource requirements</p>
+
+                                        <p>Submission: Upload as PDF to assignment dropbox<br>
+                                            Format: APA style, 12pt Times New Roman, double-spaced</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity sand">
+                                        <h2>Assignment</h2>
+                                        <p><strong>Assignment 2: Case Study Analysis</strong></p>
+                                        <p><strong>Due:</strong> Week 6, Friday by 11:59 PM<br>
+                                            <strong>Weight:</strong> 25% of final grade<br>
+                                            <strong>Length:</strong> 1,500-2,000 words
+                                        </p>
+                                        <p><strong>Instructions:</strong><br>
+                                            Analyze the "Northern Manufacturing Ltd." case study using the frameworks
+                                            discussed in class.</p>
+                                        <p>Your analysis must include:</p>
+                                        <ol>
+                                            <li>Problem identification and root cause analysis</li>
+                                            <li>Three alternative solutions with pros/cons</li>
+                                            <li>Recommended solution with detailed justification</li>
+                                            <li>Implementation timeline and resource requirements</li>
+                                        </ol>
+                                        <p><strong>Submission:</strong> Upload as PDF to assignment dropbox<br>
+                                            <strong>Format:</strong> APA style, 12pt Times New Roman, double-spaced
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-section">
+                        <h3>💬 Discussion & Interaction (Green Background)</h3>
+                        <div class="style-group">
+                            <h4>💬 Discussion Forum</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:discussion]]</p>
+
+                                        <p>Discussion Forum: Leadership Styles in Crisis</p>
+
+                                        <p>Initial Post Due: Wednesday by 11:59 PM<br>
+                                            Peer Replies Due: Sunday by 11:59 PM</p>
+
+                                        <p>After completing this week's readings and watching the crisis leadership
+                                            video, discuss:</p>
+
+                                        <p>"Which leadership style is most effective during organizational crises?
+                                            Support your argument with examples from the course materials and current
+                                            events."</p>
+
+                                        <p>Requirements:</p>
+                                        <p>• Initial post: 400-500 words<br>
+                                            • Respond to at least 2 classmates (200 words each)<br>
+                                            • Include at least 2 scholarly references<br>
+                                            • Use APA format for citations</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity green">
+                                        <h2>Discussion</h2>
+                                        <p><strong>Discussion Forum: Leadership Styles in Crisis</strong></p>
+                                        <p><strong>Initial Post Due:</strong> Wednesday by 11:59 PM<br>
+                                            <strong>Peer Replies Due:</strong> Sunday by 11:59 PM
+                                        </p>
+                                        <p>After completing this week's readings and watching the crisis leadership
+                                            video, discuss:</p>
+                                        <p><em>"Which leadership style is most effective during organizational crises?
+                                                Support your argument with examples from the course materials and
+                                                current events."</em></p>
+                                        <p><strong>Requirements:</strong></p>
+                                        <ul>
+                                            <li>Initial post: 400-500 words</li>
+                                            <li>Respond to at least 2 classmates (200 words each)</li>
+                                            <li>Include at least 2 scholarly references</li>
+                                            <li>Use APA format for citations</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>📝 Post</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:post]]</p>
+
+                                        <p>Weekly Learning Journal</p>
+
+                                        <p>Due: Every Friday by 11:59 PM</p>
+
+                                        <p>This week, reflect on your learning by answering:</p>
+
+                                        <p>1. What was the most surprising thing you learned?<br>
+                                            2. How does this week's content connect to your work experience?<br>
+                                            3. What concept would you like to explore further?<br>
+                                            4. How will you apply this learning in your current role?</p>
+
+                                        <p>Keep your response to 200-300 words. Post directly to the learning journal
+                                            forum.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="activity green">
+                                        <h2>Post</h2>
+                                        <p><strong>Weekly Learning Journal</strong></p>
+                                        <p><strong>Due:</strong> Every Friday by 11:59 PM</p>
+                                        <p>This week, reflect on your learning by answering:</p>
+                                        <ol>
+                                            <li>What was the most surprising thing you learned?</li>
+                                            <li>How does this week's content connect to your work experience?</li>
+                                            <li>What concept would you like to explore further?</li>
+                                            <li>How will you apply this learning in your current role?</li>
+                                        </ol>
+                                        <p>Keep your response to 200-300 words. Post directly to the learning journal
+                                            forum.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-section">
+                        <h3>📖 Content Enhancement</h3>
+                        <div class="style-group">
+                            <h4>💡 Standout/Callout</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:standout]]</p>
+
+                                        <p>Key Concept: Emotional Intelligence</p>
+
+                                        <p>Emotional intelligence (EI) is the ability to recognize, understand, and
+                                            manage our own emotions while effectively recognizing and responding to
+                                            others' emotions.</p>
+
+                                        <p>Research shows that EI is often more important than IQ for leadership
+                                            success, accounting for 58% of job performance across all industries.</p>
+
+                                        <p>The four components of EI are:</p>
+                                        <p>1. Self-awareness<br>
+                                            2. Self-regulation<br>
+                                            3. Social awareness<br>
+                                            4. Relationship management</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="example-standout box-shadow calc-example-standout">
+                                        <h2>Key Concept: Emotional Intelligence</h2>
+                                        <p>Emotional intelligence (EI) is the ability to recognize, understand, and
+                                            manage our own emotions while effectively recognizing and responding to
+                                            others' emotions.</p>
+                                        <p>Research shows that EI is often more important than IQ for leadership
+                                            success, accounting for 58% of job performance across all industries.</p>
+                                        <p>The four components of EI are:</p>
+                                        <ol>
+                                            <li>Self-awareness</li>
+                                            <li>Self-regulation</li>
+                                            <li>Social awareness</li>
+                                            <li>Relationship management</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>📚 Reference</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:reference]]</p>
+
+                                        <p>Goleman, D. (2006). <em>Emotional intelligence</em>. Bantam Books.</p>
+
+                                        <p>Mayer, J. D., & Salovey, P. (1997). What is emotional intelligence? In P.
+                                            Salovey & D. Sluyter (Eds.), <em>Emotional development and emotional
+                                                intelligence: Educational implications</em> (pp. 3-31). Basic Books.</p>
+
+                                        <p>Bar-On, R. (2006). The Bar-On model of emotional-social intelligence (ESI).
+                                            <em>Psicothema, 18</em>, 13-25.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="msgHead accor_ref" style="clear: both;">
+                                        <h2>Reference(s)</h2>
+                                    </div>
+                                    <div class="msgBody accor_ref_body">
+                                        <p>Goleman, D. (2006). <cite>Emotional intelligence</cite>. Bantam Books.</p>
+                                        <p>Mayer, J. D., & Salovey, P. (1997). What is emotional intelligence? In P.
+                                            Salovey & D. Sluyter (Eds.), <cite>Emotional development and emotional
+                                                intelligence: Educational implications</cite> (pp. 3-31). Basic Books.
+                                        </p>
+                                        <p>Bar-On, R. (2006). The Bar-On model of emotional-social intelligence (ESI).
+                                            <cite>Psicothema, 18</cite>, 13-25.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>📝 Transcript/Caption</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:transcript]]</p>
+
+                                        <p>Text Version of Leadership Styles Diagram</p>
+
+                                        <p>This diagram shows four leadership styles arranged in a 2x2 matrix:</p>
+
+                                        <p>Top Left - Autocratic Leadership:</p>
+                                        <p>- High control, low collaboration<br>
+                                            - Leader makes all decisions<br>
+                                            - Clear chain of command<br>
+                                            - Best for crisis situations</p>
+
+                                        <p>Top Right - Democratic Leadership:</p>
+                                        <p>- Moderate control, high collaboration<br>
+                                            - Team input valued<br>
+                                            - Shared decision-making<br>
+                                            - Best for creative projects</p>
+
+                                        <p>Bottom Left - Laissez-faire Leadership:</p>
+                                        <p>- Low control, low collaboration<br>
+                                            - Minimal leader involvement<br>
+                                            - Team self-manages<br>
+                                            - Best for expert teams</p>
+
+                                        <p>Bottom Right - Transformational Leadership:</p>
+                                        <p>- Low control, high collaboration<br>
+                                            - Inspirational vision<br>
+                                            - Empowers others<br>
+                                            - Best for change initiatives</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <p><button class="moreClick">Text Version of Leadership Styles Diagram</button></p>
+                                    <div class="moreShow">
+                                        <p>This diagram shows four leadership styles arranged in a 2x2 matrix:</p>
+                                        <p><strong>Top Left - Autocratic Leadership:</strong></p>
+                                        <ul>
+                                            <li>High control, low collaboration</li>
+                                            <li>Leader makes all decisions</li>
+                                            <li>Clear chain of command</li>
+                                            <li>Best for crisis situations</li>
+                                        </ul>
+                                        <p><strong>Top Right - Democratic Leadership:</strong></p>
+                                        <ul>
+                                            <li>Moderate control, high collaboration</li>
+                                            <li>Team input valued</li>
+                                            <li>Shared decision-making</li>
+                                            <li>Best for creative projects</li>
+                                        </ul>
+                                        <p><strong>Bottom Left - Laissez-faire Leadership:</strong></p>
+                                        <ul>
+                                            <li>Low control, low collaboration</li>
+                                            <li>Minimal leader involvement</li>
+                                            <li>Team self-manages</li>
+                                            <li>Best for expert teams</li>
+                                        </ul>
+                                        <p><strong>Bottom Right - Transformational Leadership:</strong></p>
+                                        <ul>
+                                            <li>Low control, high collaboration</li>
+                                            <li>Inspirational vision</li>
+                                            <li>Empowers others</li>
+                                            <li>Best for change initiatives</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-section">
+                        <h3>🖼️ Media & Visual Content</h3>
+                        <div class="style-group">
+                            <h4>🖼️ Image (Centered)</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:image]]</p>
+
+                                        <p><img src="media/leadership-pyramid.png"
+                                                alt="Leadership pyramid showing hierarchy of leadership skills" /></p>
+
+                                        <p>Caption: The leadership pyramid demonstrates how foundational skills support
+                                            advanced leadership capabilities.</p>
+
+                                        <p>Citation: Adapted from Northouse, P. G. (2021). Leadership: Theory and
+                                            practice (8th ed.). SAGE Publications.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <figure class="add-citation"
+                                        data-citation="Adapted from Northouse, P. G. (2021). Leadership: Theory and practice (8th ed.). SAGE Publications.">
+                                        <img src="media/leadership-pyramid.png"
+                                            alt="Leadership pyramid showing hierarchy of leadership skills" />
+                                        <figcaption>The leadership pyramid demonstrates how foundational skills support
+                                            advanced leadership capabilities.</figcaption>
+                                    </figure>
+                                </div>
+                            </div>
+
+                            <h4>🖼️ Image Left/Right</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:imageleft]]</p>
+
+                                        <p><img src="media/team-meeting.jpg"
+                                                alt="Diverse team in a collaborative meeting" style="width: 60%;" /></p>
+
+                                        <p>Caption: Effective teams demonstrate high levels of trust and psychological
+                                            safety.</p>
+
+                                        <p>Citation: Photo by Campaign Creators on Unsplash</p>
+
+                                        <p>[[/style]]</p>
+
+                                        <p>This paragraph demonstrates how text flows around the left-floated image. The
+                                            image appears on the left side of the content area, while this text wraps
+                                            around it on the right. This layout is particularly effective for
+                                            integrating visual content with explanatory text, creating a more engaging
+                                            and space-efficient design. The floating image maintains its position while
+                                            allowing the text to flow naturally around it, creating a professional and
+                                            visually appealing layout that enhances the learning experience.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Single column layout to properly demonstrate floating behavior -->
+                            <div style="margin: 2rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                                <h5>🌐 Rendered HTML Output (Full Width to Show Float Behavior):</h5>
+                                <div style="background: white; padding: 1.5rem; border-radius: 4px; overflow: auto;">
+                                    <figure class="leftfloat add-citation"
+                                        data-citation="Photo by Campaign Creators on Unsplash"
+                                        style="float: left; margin: 0 1rem 1rem 0; width: 300px;">
+                                        <img src="media/team-meeting.jpg" alt="Diverse team in a collaborative meeting"
+                                            style="width: 100%; height: auto;" />
+                                        <figcaption style="font-size: 0.9em; color: #666; margin-top: 0.5rem;">Effective
+                                            teams demonstrate high levels of trust and psychological safety.
+                                        </figcaption>
+                                    </figure>
+                                    <p>This paragraph demonstrates how text flows around the left-floated image. The
+                                        image appears on the left side of the content area, while this text wraps around
+                                        it on the right. This layout is particularly effective for integrating visual
+                                        content with explanatory text, creating a more engaging and space-efficient
+                                        design. The floating image maintains its position while allowing the text to
+                                        flow naturally around it, creating a professional and visually appealing layout
+                                        that enhances the learning experience.</p>
+                                    <p>Additional paragraphs continue to wrap around the floated image, demonstrating
+                                        how this layout technique creates a natural reading flow. The text automatically
+                                        adjusts to the available space, creating an organic integration between visual
+                                        and textual content. This approach is commonly used in professional
+                                        documentation, articles, and educational materials where space efficiency and
+                                        visual appeal are important considerations.</p>
+                                    <div style="clear: both;"></div>
+                                </div>
+                            </div>
+
+                            <h4>📋 Request (Media Requests)</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:request]]</p>
+
+                                        <p>Media Request: Interactive Leadership Assessment</p>
+
+                                        <p>Type: Interactive H5P Content<br>
+                                            Purpose: Self-assessment quiz on leadership styles<br>
+                                            Location: After the leadership styles content, before the discussion forum
+                                        </p>
+
+                                        <p>Requirements:</p>
+                                        <p>- 10 scenario-based questions<br>
+                                            - Immediate feedback for each answer<br>
+                                            - Final score with personalized recommendations<br>
+                                            - Mobile-responsive design<br>
+                                            - Accessible for screen readers</p>
+
+                                        <p>Deadline: Week 3 (before course launch)<br>
+                                            Priority: High - this is a key learning activity</p>
+
+                                        <p>Files needed:</p>
+                                        <p>- leadership-scenarios.docx (contains question content)<br>
+                                            - leadership-feedback.docx (contains feedback text)</p>
+
+                                        <p>Please confirm receipt and estimated completion date.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="media-placeholder" style="text-align: left;">
+                                        <p><strong>[CMP NOTES]</strong></p>
+                                        <p><strong>Media Request: Interactive Leadership Assessment</strong></p>
+                                        <p><strong>Type:</strong> Interactive H5P Content<br>
+                                            <strong>Purpose:</strong> Self-assessment quiz on leadership styles<br>
+                                            <strong>Location:</strong> After the leadership styles content, before the
+                                            discussion forum
+                                        </p>
+                                        <p><strong>Requirements:</strong></p>
+                                        <ul>
+                                            <li>10 scenario-based questions</li>
+                                            <li>Immediate feedback for each answer</li>
+                                            <li>Final score with personalized recommendations</li>
+                                            <li>Mobile-responsive design</li>
+                                            <li>Accessible for screen readers</li>
+                                        </ul>
+                                        <p><strong>Deadline:</strong> Week 3 (before course launch)<br>
+                                            <strong>Priority:</strong> High - this is a key learning activity
+                                        </p>
+                                        <p><strong>Files needed:</strong></p>
+                                        <ul>
+                                            <li>leadership-scenarios.docx (contains question content)</li>
+                                            <li>leadership-feedback.docx (contains feedback text)</li>
+                                        </ul>
+                                        <p>Please confirm receipt and estimated completion date.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-section">
+                        <h3>💻 Technical Content</h3>
+                        <div class="style-group">
+                            <h4>💻 Code Block</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:code]]</p>
+
+                                        <p>// JavaScript function to calculate team effectiveness score<br>
+                                            function calculateTeamEffectiveness(trust, communication, collaboration,
+                                            results) {<br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;// Validate input parameters<br>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;if (trust < 1 || trust> 10 || communication < 1 ||
+                                                    communication> 10 || <br>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collaboration < 1 ||
+                                                        collaboration> 10 || results < 1 || results> 10) {<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw new
+                                                            Error("All scores must be between 1 and 10");<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;// Calculate weighted average<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;const weightedScore = (trust * 0.25)
+                                                            + (communication * 0.25) + <br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(collaboration
+                                                            * 0.25) + (results * 0.25);<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;// Return score with
+                                                            interpretation<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;return {<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;score:
+                                                            Math.round(weightedScore * 10) / 10,<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interpretation:
+                                                            getInterpretation(weightedScore)<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;};<br>
+                                                            }<br>
+                                                            <br>
+                                                            function getInterpretation(score) {<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;if (score >= 8.5) return "Highly
+                                                            Effective Team";<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;if (score >= 7.0) return "Effective
+                                                            Team";<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;if (score >= 5.5) return "Moderately
+                                                            Effective Team";<br>
+                                                            &nbsp;&nbsp;&nbsp;&nbsp;return "Team Needs Development";<br>
+                                                            }</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Full-width Prism.js rendered example -->
+                            <div style="margin: 2rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                                <h5>🌐 Rendered HTML Output (With Prism.js Syntax Highlighting):</h5>
+                                <div style="background: white; padding: 1.5rem; border-radius: 4px;">
+                                    <!-- Include Prism.js CSS and JS for this example -->
+                                    <link
+                                        href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
+                                        rel="stylesheet" />
+                                    <link
+                                        href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
+                                        rel="stylesheet" />
+
+                                    <style>
+                                        /* Code block styling matching the converter output */
+                                        .demo-code-block {
+                                            margin: 20px auto;
+                                            border-radius: 8px;
+                                            overflow: hidden;
+                                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                                            position: relative;
+                                            max-width: 80%;
+                                            width: 80%;
+                                        }
+
+                                        .demo-code-block pre {
+                                            margin: 0;
+                                            padding: 0;
+                                            background: #f8f8f2;
+                                            overflow-x: auto;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block code {
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block .line-numbers .line-numbers-rows {
+                                            margin-top: 2px !important;
+                                            border-right: 1px solid #d1d5da;
+                                            padding-right: 10px;
+                                            user-select: none;
+                                            pointer-events: none;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block .line-numbers .line-numbers-rows>span {
+                                            pointer-events: none;
+                                            display: block;
+                                            counter-increment: linenumber;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block .line-numbers .line-numbers-rows>span::before {
+                                            content: counter(linenumber);
+                                            color: #999;
+                                            display: block;
+                                            padding-right: 0.8em;
+                                            text-align: right;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block pre[class*="language-"].line-numbers {
+                                            position: relative;
+                                            padding-left: 3.8em;
+                                            counter-reset: linenumber;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-code-block pre[class*="language-"].line-numbers>code {
+                                            position: relative;
+                                            white-space: pre;
+                                            font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                                            font-size: 14px !important;
+                                            line-height: 1.5 !important;
+                                        }
+
+                                        .demo-copy-button {
+                                            position: absolute;
+                                            top: 8px;
+                                            right: 8px;
+                                            background: #007acc;
+                                            color: white;
+                                            border: none;
+                                            border-radius: 4px;
+                                            padding: 6px 12px;
+                                            font-size: 12px;
+                                            cursor: pointer;
+                                            transition: all 0.2s ease;
+                                            font-family: Arial, sans-serif;
+                                            z-index: 10;
+                                        }
+
+                                        .demo-copy-button:hover {
+                                            background: #005a9e;
+                                            transform: translateY(-1px);
+                                        }
+
+                                        .demo-copy-button.copied {
+                                            background: #28a745;
+                                        }
+                                    </style>
+
+                                    <div class="demo-code-block">
+                                        <button class="demo-copy-button"
+                                            onclick="copyDemoCode(this, 'demo-code-1')">Copy</button>
+                                        <pre class="line-numbers"><code id="demo-code-1" class="language-javascript">// JavaScript function to calculate team effectiveness score
+function calculateTeamEffectiveness(trust, communication, collaboration, results) {
+    // Validate input parameters
+    if (trust < 1 || trust > 10 || communication < 1 || communication > 10 || 
+        collaboration < 1 || collaboration > 10 || results < 1 || results > 10) {
+        throw new Error("All scores must be between 1 and 10");
+    }
+    
+    // Calculate weighted average
+    const weightedScore = (trust * 0.25) + (communication * 0.25) + 
+                         (collaboration * 0.25) + (results * 0.25);
+    
+    // Return score with interpretation
+    return {
+        score: Math.round(weightedScore * 10) / 10,
+        interpretation: getInterpretation(weightedScore)
+    };
+}
+
+function getInterpretation(score) {
+    if (score >= 8.5) return "Highly Effective Team";
+    if (score >= 7.0) return "Effective Team";
+    if (score >= 5.5) return "Moderately Effective Team";
+    return "Team Needs Development";
+}</code></pre>
+                                    </div>
+
+                                    <script
+                                        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+                                    <script
+                                        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+                                    <script
+                                        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+                                    <script>
+                                        // Initialize Prism for this demo
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            if (typeof Prism !== 'undefined') {
+                                                Prism.highlightAll();
+                                                setTimeout(function () {
+                                                    if (Prism.plugins && Prism.plugins.lineNumbers) {
+                                                        document.querySelectorAll('pre.line-numbers').forEach(function (pre) {
+                                                            Prism.plugins.lineNumbers.resize(pre);
+                                                        });
+                                                    }
+                                                }, 100);
+                                            }
+                                        });
+
+                                        // Copy functionality for demo
+                                        function copyDemoCode(button, codeId) {
+                                            const codeElement = document.getElementById(codeId);
+                                            const codeText = codeElement.textContent || codeElement.innerText;
+
+                                            if (navigator.clipboard && window.isSecureContext) {
+                                                navigator.clipboard.writeText(codeText).then(function () {
+                                                    showDemoCopyFeedback(button);
+                                                });
+                                            } else {
+                                                const textArea = document.createElement('textarea');
+                                                textArea.value = codeText;
+                                                document.body.appendChild(textArea);
+                                                textArea.select();
+                                                document.execCommand('copy');
+                                                document.body.removeChild(textArea);
+                                                showDemoCopyFeedback(button);
+                                            }
+                                        }
+
+                                        function showDemoCopyFeedback(button) {
+                                            const originalText = button.textContent;
+                                            button.textContent = 'Copied!';
+                                            button.classList.add('copied');
+
+                                            setTimeout(function () {
+                                                button.textContent = originalText;
+                                                button.classList.remove('copied');
+                                            }, 2000);
+                                        }
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-section">
+                        <h3>🔧 Workflow & Communication</h3>
+                        <div class="style-group">
+                            <h4>📝 Note (CMP Communication)</h4>
+                            <div class="style-example">
+                                <div>
+                                    <h5>📝 Word Document Format:</h5>
+                                    <div class="code-block">
+                                        <p>[[style:note]]</p>
+
+                                        <p>CMP Instructions for this section:</p>
+
+                                        <p>1. Replace the placeholder video with the "Leadership in Crisis" video from
+                                            our media library (file: crisis-leadership-v3.mp4)</p>
+
+                                        <p>2. Add closed captions using the provided transcript file
+                                            (crisis-leadership-transcript.vtt)</p>
+
+                                        <p>3. Set video to not autoplay, include controls, and start at 0:30 (skip the
+                                            intro music)</p>
+
+                                        <p>4. After the video, add the leadership assessment interactive element we
+                                            discussed in our meeting</p>
+
+                                        <p>5. Ensure the assessment results link to the appropriate discussion forum</p>
+
+                                        <p>Please confirm these changes by Friday so we can review before the course
+                                            launch.</p>
+
+                                        <p>Questions? Contact me at [email] or via Teams.</p>
+
+                                        <p>[[/style]]</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5>🌐 Rendered HTML Output:</h5>
+                                    <div class="media-placeholder"
+                                        style="text-align: left; background-color: #e2e3e5; border: 2px dashed #6c757d; padding: 20px; margin: 20px auto; color: #495057; border-radius: 5px;">
+                                        <p><strong>[CMP NOTES]</strong></p>
+                                        <p><strong>CMP Instructions for this section:</strong></p>
+                                        <p>1. Replace the placeholder video with the "Leadership in Crisis" video from
+                                            our media library (file: crisis-leadership-v3.mp4)</p>
+                                        <p>2. Add closed captions using the provided transcript file
+                                            (crisis-leadership-transcript.vtt)</p>
+                                        <p>3. Set video to not autoplay, include controls, and start at 0:30 (skip the
+                                            intro music)</p>
+                                        <p>4. After the video, add the leadership assessment interactive element we
+                                            discussed in our meeting</p>
+                                        <p>5. Ensure the assessment results link to the appropriate discussion forum</p>
+                                        <p>Please confirm these changes by Friday so we can review before the course
+                                            launch.</p>
+                                        <p>Questions? Contact me at [email] or via Teams.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ID Quality Checklist -->
+            <section class="content-section" id="id-checklist">
+                <div class="section-header">
+                    <div class="section-icon">📋</div>
+                    <div class="section-title">
+                        <h2>ID Pre-Submission Quality Checklist</h2>
+                        <p class="section-description">Complete this checklist before sending your document to the CMP
+                        </p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 How to Use:</strong> Go through each item systematically. Don't skip steps - each one
+                    prevents common conversion issues.
+                </div>
+
+                <div class="checklist">
+                    <h3>📝 Document Structure ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All sections use X.Y.Z heading pattern (1.0.0, 1.1.0, 1.1.1, etc.)</li>
+                        <li>All headings use Heading 1 (H1) style in Word (not just bold text)</li>
+                        <li>LO Summary section included at the end</li>
+                        <li>No orphaned headings (every heading has content underneath)</li>
+                        <li>Heading titles are descriptive and concise</li>
+                        <li>Document follows logical learning progression</li>
+                    </ul>
+
+                    <h3>🎨 Style Tags ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All style tags properly closed with [[/style]]</li>
+                        <li>No nested style tags (one style inside another)</li>
+                        <li>Style tags are on separate lines (not inline with content)</li>
+                        <li>Correct style types used for content purpose</li>
+                        <li>CMP instructions use [[style:note]] not Word comments</li>
+                        <li>Media requests use [[style:request]] with detailed specifications</li>
+                    </ul>
+
+                    <h3>🖼️ Media & Content ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All images have proper citations and captions</li>
+                        <li>Image alt text is descriptive and meaningful</li>
+                        <li>All external links are functional and appropriate</li>
+                        <li>Video/audio content has accessibility considerations noted</li>
+                        <li>Interactive elements are clearly specified in requests</li>
+                        <li>File names and references are accurate</li>
+                    </ul>
+
+
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>✅ Ready to Submit?</strong> If you've checked all items above, your document is ready to
+                    send to the CMP.
+                </div>
+            </section>
+
+            <!-- CMP Quality Checklist -->
+            <section class="content-section" id="cmp-checklist">
+                <div class="section-header">
+                    <div class="section-icon">✅</div>
+                    <div class="section-title">
+                        <h2>CMP Pre-Upload Review Checklist</h2>
+                        <p class="section-description">Complete this checklist before uploading files to Brightspace</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <strong>⚠️ Critical:</strong> Files are NOT ready for Brightspace until ALL items in this checklist
+                    are completed. Students will see these files immediately upon upload.
+                </div>
+
+                <div class="checklist">
+                    <h3>📁 File Generation & Organization ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All expected HTML files generated from H1 sections</li>
+                        <li>Media requests file created (if applicable)</li>
+                        <li>File names follow naming convention (01_02_03_title.html)</li>
+                        <li>No broken, missing, or duplicate files</li>
+                        <li>Files are organized in appropriate folder structure</li>
+                        <li>All generated files open without errors</li>
+                    </ul>
+
+                    <h3>🎨 Style & Formatting Review ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All style tags rendered correctly (activities, discussions, etc.)</li>
+                        <li>Global styles applied consistently</li>
+
+                        <li>No broken CSS or styling issues</li>
+                    </ul>
+
+                    <h3>🖼️ Media Integration ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All media request placeholders replaced with actual content</li>
+                        <li>Images display properly with correct alt text</li>
+                        <li>Videos embedded with proper controls and captions</li>
+                        <li>Interactive elements (H5P, etc.) functional and tested</li>
+                        <li>All file paths and links verified</li>
+
+                    </ul>
+
+                    <h3>🔗 Functionality Testing ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All internal links work correctly</li>
+                        <li>External links open in new tabs and are functional</li>
+                        <li>Interactive elements respond properly</li>
+                        <li>Forms and input fields work as expected</li>
+
+                        <li>Accordion/collapsible content expands correctly</li>
+                    </ul>
+
+                    <h3>♿ Accessibility Compliance ✓</h3>
+                    <ul class="checklist-items">
+                        <li>All images have meaningful alt text</li>
+                        <li>Videos have captions or transcripts</li>
+
+
+
+                    </ul>
+
+
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>🚀 Ready for Brightspace!</strong> If all items are checked, your files are ready for
+                    upload. Remember to test once more in the actual Brightspace environment after upload.
+                </div>
+            </section>
+
+            <!-- Common Issues & Solutions -->
+            <section class="content-section" id="common-issues">
+                <div class="section-header">
+                    <div class="section-icon">⚠️</div>
+                    <div class="section-title">
+                        <h2>Common Issues & Solutions</h2>
+                        <p class="section-description">Quick solutions to frequently encountered problems</p>
+                    </div>
+                </div>
+
+                <div class="issue-categories">
+                    <div class="issue-section">
+                        <h3>🔧 Pandoc Conversion Issues</h3>
+
+                        <div class="issue-item">
+                            <h4>Problem: "pandoc: command not found"</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Restart your terminal/command prompt</li>
+                                <li>Verify installation: run <code>pandoc --version</code></li>
+                                <li>On Windows: Add Pandoc to system PATH</li>
+                                <li>On Mac: Try <code>brew install pandoc</code></li>
+                                <li>Reinstall Pandoc with administrator privileges</li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: "Permission denied" during conversion</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Ensure you have write access to the output folder</li>
+                                <li>Close the Word document before conversion</li>
+                                <li>Run terminal/command prompt as administrator</li>
+                                <li>Check if output file is open in another program</li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: Encoding errors or strange characters</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Use the <code>--ascii</code> flag in your Pandoc command</li>
+                                <li>Save Word document as .docx (not .doc)</li>
+                                <li>Check for special characters or symbols in the document</li>
+                                <li>Try: <code>pandoc input.docx -s -o output.html --extract-media=. --ascii</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: Images not extracting properly</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Ensure you're using <code>--extract-media=.</code> flag</li>
+                                <li>Check that images are embedded (not linked) in Word</li>
+                                <li>Verify write permissions in the output directory</li>
+                                <li>Try extracting to a specific folder: <code>--extract-media=./media</code></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="issue-section">
+                        <h3>📝 Document Formatting Issues</h3>
+
+                        <div class="issue-item">
+                            <h4>Problem: Style tags not working/rendering</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Check that all style tags are properly closed: <code>[[/style]]</code></li>
+                                <li>Ensure style tags are on separate lines (not inline)</li>
+                                <li>Verify no nested style tags (one inside another)</li>
+                                <li>Check for typos in style tag names</li>
+                                <li>Ensure no extra spaces: <code>[[style:read]]</code> not
+                                    <code>[[ style:read ]]</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: Headings not creating separate files</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Verify headings use Heading 1 (H1) style in Word, not just bold text</li>
+                                <li>Check heading format follows X.Y.Z pattern (1.0.0, 1.1.0, etc.)</li>
+                                <li>Ensure no extra characters or formatting in headings</li>
+                                <li>Confirm each heading has content underneath it</li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: Missing or incorrect file names</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Check that heading titles are descriptive (not just numbers)</li>
+                                <li>Remove special characters from heading titles</li>
+                                <li>Ensure consistent heading format throughout document</li>
+                                <li>Verify LO Summary section is properly formatted</li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: CMP notes/instructions not visible</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Use <code>[[style:note]]</code> instead of Word comments</li>
+                                <li>Ensure note tags are properly closed</li>
+                                <li>Check that notes are on separate lines</li>
+                                <li>Word comments don't convert - always use style tags</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="issue-section">
+                        <h3>🖼️ Media & Display Issues</h3>
+
+                        <div class="issue-item">
+                            <h4>Problem: Images not displaying in HTML</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Check file paths are correct and relative</li>
+                                <li>Ensure images were extracted during Pandoc conversion</li>
+                                <li>Verify image files exist in the media folder</li>
+                                <li>Check image file extensions are correct</li>
+                                <li>Ensure no spaces or special characters in image filenames</li>
+                            </ul>
+                        </div>
+
+                        <div class="issue-item">
+                            <h4>Problem: Code blocks not syntax highlighted</h4>
+                            <p><strong>Solution:</strong></p>
+                            <ul>
+                                <li>Verify Prism.js libraries are loading (check browser console)</li>
+                                <li>Ensure code is wrapped in <code>[[style:code]]</code> tags</li>
+                                <li>Check that code language is being detected correctly</li>
+                                <li>Verify no HTML entities in code (use plain text)</li>
+                            </ul>
+                        </div>
+
+
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 Still Having Issues?</strong> If your problem isn't listed here, check the <a
+                        href="#id-checklist">ID Quality Checklist</a> or <a href="#cmp-checklist">CMP Review
+                        Checklist</a> for additional troubleshooting steps.
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Enhanced JavaScript functionality -->
+    <script src="js/modern-docs.js"></script>
+    <script>
+        // Enhanced UX functionality
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ===== SEARCH FUNCTIONALITY =====
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            let searchData = [];
+
+            // Build search index
+            function buildSearchIndex() {
+                const sections = document.querySelectorAll('section, .style-table tr, .code-block, h3, h4, h5');
+                sections.forEach((element, index) => {
+                    const text = element.textContent.toLowerCase();
+                    const id = element.id || `search-${index}`;
+                    const title = element.querySelector('h1, h2, h3, h4, h5')?.textContent ||
+                        element.closest('section')?.querySelector('h1, h2')?.textContent ||
+                        'Content';
+
+                    if (text.length > 10) { // Skip very short content
+                        searchData.push({
+                            id: id,
+                            title: title,
+                            content: text,
+                            element: element
+                        });
+                    }
+                });
+            }
+
+            // Perform search
+            function performSearch(query) {
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                const results = searchData.filter(item =>
+                    item.content.includes(query.toLowerCase()) ||
+                    item.title.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 8); // Limit to 8 results
+
+                displaySearchResults(results, query);
+            }
+
+            // Display search results
+            function displaySearchResults(results, query) {
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                } else {
+                    searchResults.innerHTML = results.map(result => {
+                        const highlightedTitle = result.title.replace(
+                            new RegExp(query, 'gi'),
+                            match => `<span class="search-highlight">${match}</span>`
+                        );
+                        const preview = result.content.substring(0, 100) + '...';
+
+                        return `
+                            <div class="search-result-item" data-target="${result.id}">
+                                <strong>${highlightedTitle}</strong><br>
+                                <small>${preview}</small>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                searchResults.style.display = 'block';
+            }
+
+            // Search event listeners
+            searchInput.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+
+            searchResults.addEventListener('click', (e) => {
+                const item = e.target.closest('.search-result-item');
+                if (item) {
+                    const targetId = item.dataset.target;
+                    const targetElement = document.getElementById(targetId) ||
+                        document.querySelector(`[data-search-id="${targetId}"]`);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        searchResults.style.display = 'none';
+                        searchInput.value = '';
+                    }
+                }
+            });
+
+            // Hide search results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // ===== BACK TO TOP BUTTON =====
+            const backToTop = document.getElementById('backToTop');
+            const progressRing = backToTop.querySelector('.progress-ring circle');
+            const circumference = 2 * Math.PI * 32; // radius = 32
+
+            progressRing.style.strokeDasharray = circumference;
+            progressRing.style.strokeDashoffset = circumference;
+
+            function updateScrollProgress() {
+                const scrolled = window.pageYOffset;
+                const maxHeight = document.body.scrollHeight - window.innerHeight;
+                const progress = scrolled / maxHeight;
+
+                // Update progress ring
+                const offset = circumference - (progress * circumference);
+                progressRing.style.strokeDashoffset = offset;
+
+                // Update main progress bar
+                document.querySelector('.progress-bar').style.width = (progress * 100) + '%';
+
+                // Show/hide back to top button
+                if (scrolled > 300) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            }
+
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            window.addEventListener('scroll', updateScrollProgress);
+
+            // ===== MOBILE NAVIGATION =====
+            const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+            const mobileNav = document.getElementById('mobileNav');
+            const navOverlay = document.getElementById('navOverlay');
+            const mobileNavClose = document.getElementById('mobileNavClose');
+
+            function openMobileNav() {
+                mobileNav.classList.add('active');
+                navOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMobileNav() {
+                mobileNav.classList.remove('active');
+                navOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            mobileNavToggle?.addEventListener('click', openMobileNav);
+            mobileNavClose?.addEventListener('click', closeMobileNav);
+            navOverlay?.addEventListener('click', closeMobileNav);
+
+            // Close mobile nav when clicking on a link
+            document.querySelectorAll('.mobile-nav-item').forEach(link => {
+                link.addEventListener('click', closeMobileNav);
+            });
+
+            // ===== ENHANCED CODE BLOCKS =====
+            function enhanceCodeBlocks() {
+                document.querySelectorAll('.code-block').forEach((block, index) => {
+                    if (!block.closest('.code-block-enhanced')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'code-block-enhanced';
+
+                        const header = document.createElement('div');
+                        header.className = 'code-header';
+                        header.innerHTML = `
+                            <span class="code-language">Example Code</span>
+                            <button class="copy-btn" onclick="copyCodeToClipboard(this, 'code-${index}')">Copy</button>
+                        `;
+
+                        block.id = `code-${index}`;
+                        block.parentNode.insertBefore(wrapper, block);
+                        wrapper.appendChild(header);
+                        wrapper.appendChild(block);
+                    }
+                });
+            }
+
+            // ===== INTERACTIVE CHECKLISTS =====
+            function enhanceChecklists() {
+                document.querySelectorAll('.checklist').forEach(checklist => {
+                    if (!checklist.classList.contains('checklist-enhanced')) {
+                        checklist.classList.add('checklist-enhanced');
+
+                        // Add progress bar
+                        const progressContainer = document.createElement('div');
+                        progressContainer.innerHTML = `
+                            <div class="checklist-progress">
+                                <div class="checklist-progress-bar"></div>
+                            </div>
+                            <div class="checklist-stats">
+                                <span class="completed-count">0</span> of <span class="total-count">0</span> completed
+                            </div>
+                        `;
+                        checklist.insertBefore(progressContainer, checklist.firstChild);
+
+                        // Convert list items to interactive items
+                        const items = checklist.querySelectorAll('.checklist-items li');
+                        items.forEach(item => {
+                            if (!item.classList.contains('checklist-item')) {
+                                item.classList.add('checklist-item');
+
+                                const checkbox = document.createElement('div');
+                                checkbox.className = 'checklist-checkbox';
+
+                                const content = document.createElement('div');
+                                content.innerHTML = item.innerHTML;
+
+                                item.innerHTML = '';
+                                item.appendChild(checkbox);
+                                item.appendChild(content);
+
+                                item.addEventListener('click', () => toggleChecklistItem(item, checklist));
+                            }
+                        });
+
+                        updateChecklistProgress(checklist);
+                    }
+                });
+            }
+
+            function toggleChecklistItem(item, checklist) {
+                item.classList.toggle('completed');
+                updateChecklistProgress(checklist);
+
+                // Save state to localStorage
+                const checklistId = checklist.closest('section')?.id || 'default';
+                const itemIndex = Array.from(checklist.querySelectorAll('.checklist-item')).indexOf(item);
+                const savedState = JSON.parse(localStorage.getItem('checklist-state') || '{}');
+                if (!savedState[checklistId]) savedState[checklistId] = {};
+                savedState[checklistId][itemIndex] = item.classList.contains('completed');
+                localStorage.setItem('checklist-state', JSON.stringify(savedState));
+            }
+
+            function updateChecklistProgress(checklist) {
+                const items = checklist.querySelectorAll('.checklist-item');
+                const completed = checklist.querySelectorAll('.checklist-item.completed');
+                const progress = items.length > 0 ? (completed.length / items.length) * 100 : 0;
+
+                const progressBar = checklist.querySelector('.checklist-progress-bar');
+                const completedCount = checklist.querySelector('.completed-count');
+                const totalCount = checklist.querySelector('.total-count');
+
+                if (progressBar) progressBar.style.width = progress + '%';
+                if (completedCount) completedCount.textContent = completed.length;
+                if (totalCount) totalCount.textContent = items.length;
+            }
+
+            function loadChecklistState() {
+                const savedState = JSON.parse(localStorage.getItem('checklist-state') || '{}');
+                document.querySelectorAll('.checklist-enhanced').forEach(checklist => {
+                    const checklistId = checklist.closest('section')?.id || 'default';
+                    if (savedState[checklistId]) {
+                        const items = checklist.querySelectorAll('.checklist-item');
+                        items.forEach((item, index) => {
+                            if (savedState[checklistId][index]) {
+                                item.classList.add('completed');
+                            }
+                        });
+                        updateChecklistProgress(checklist);
+                    }
+                });
+            }
+
+            // ===== SMOOTH SCROLLING =====
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // ===== COPY CODE FUNCTIONALITY =====
+            window.copyCodeToClipboard = function (button, codeId) {
+                const codeElement = document.getElementById(codeId);
+                const codeText = codeElement.textContent || codeElement.innerText;
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(codeText).then(function () {
+                        showCopyFeedback(button);
+                    });
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = codeText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showCopyFeedback(button);
+                }
+            };
+
+            function showCopyFeedback(button) {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(function () {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }
+
+            // ===== INITIALIZATION =====
+            buildSearchIndex();
+            enhanceCodeBlocks();
+            enhanceChecklists();
+            loadChecklistState();
+            updateScrollProgress();
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + K for search focus
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+
+                // Escape to close search results
+                if (e.key === 'Escape') {
+                    searchResults.style.display = 'none';
+                    closeMobileNav();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

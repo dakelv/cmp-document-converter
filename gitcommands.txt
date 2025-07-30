@@ -12,14 +12,33 @@ git push origin main
 # to revert to a previous stable version:
 # See your commit history first:
 git log --oneline
+
+#other command showing commit history:
+# See recent commits:
+#git log --oneline
+# or more detailed:
+#git log --oneline --graph --decorate
+
+# See what changed in each commit:
+#git log --stat
+
 # Example output:
 # 6f6929b (HEAD -> main) Bad changes I want to undo
 # c976303 Good stable version I want back to
 # a123456 Even earlier commit
 
 # Revert the bad commit:
-git revert 6f6929b
+git revert 6f6929b, or
+git revert HEAD #revert last commit)
 # This creates a new commit that undoes 6f6929b
 
 # Push the revert:
 git push origin main
+
+ #If You Work from Multiple Computers:
+
+
+# On new computer, clone your repo:
+git clone https://github.com/dakelv/cmp-document-converter.git
+cd cmp-document-converter
+# Now you have the same project folder everywhere!

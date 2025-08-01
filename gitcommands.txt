@@ -49,3 +49,10 @@ cd cmp-document-converter
 # Tag your current state:
 git tag -a v2.0.1 -m "v2.0.1 - CMP title fix and documentation updates"
 git push origin v2.0.1
+
+One-Minute Solution to create a release:
+Visit: https://github.com/dakelv/cmp-document-converter/releases
+Click: "Create a new release"
+Select: v2.0.1 from tag dropdown
+Add title and description
+Publish

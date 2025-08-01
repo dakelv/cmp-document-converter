@@ -1139,6 +1139,26 @@
                     Choose your role below to get started.
                 </div>
 
+                <!-- Workflow Animation GIFs -->
+                <div class="workflow-animations" style="margin: 2rem 0; text-align: center;">
+                    <div class="animation-container" style="margin-bottom: 3rem;">
+                        <h4 style="color: #0d4f1c; margin-bottom: 1rem;">👩‍🏫 ID Workflow</h4>
+                        <img src="media/ID_path.gif"
+                            alt="Animated demonstration of the Instructional Designer workflow showing document preparation steps"
+                            style="width: 100%; max-width: 800px; border: 2px solid #28a745; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <p style="font-size: 14px; color: #6c757d; margin-top: 0.5rem;">Document preparation and
+                            formatting</p>
+                    </div>
+                    <div class="animation-container">
+                        <h4 style="color: #001845; margin-bottom: 1rem;">👨‍💻 CMP Workflow</h4>
+                        <img src="media/CMP_path.gif"
+                            alt="Animated demonstration of the Course Material Production workflow showing conversion and processing steps"
+                            style="width: 100%; max-width: 800px; border: 2px solid #007bff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <p style="font-size: 14px; color: #6c757d; margin-top: 0.5rem;">Conversion and file processing
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Role-based quick paths -->
                 <div class="quick-paths">
                     <div class="path-card id-path">
@@ -1161,7 +1181,8 @@
                         <ol>
                             <li><a href="#pandoc-setup">Install Pandoc</a> (one-time setup)</li>
                             <li>Convert the LO Word document to HTML:
-                                <code>pandoc input.docx -s -o output.html --extract-media=. --ascii</code></li>
+                                <code>pandoc input.docx -s -o output.html --extract-media=. --ascii</code>
+                            </li>
                             <li>Upload HTML to web converter</li>
                             <li>Review, insert media, and finalize files</li>
                         </ol>
@@ -1528,7 +1549,8 @@
                                             target="_new"> CMP Document Converter</strong> web interface</a></li>
                                 <li>Skip Step 2: <strong>Test Connection.</strong></li>
                                 <li><strong>Upload your HTML file</strong> (the output.html from Step 2) and click
-                                    <strong>Convert Document</strong></li>
+                                    <strong>Convert Document</strong>
+                                </li>
                                 <li><strong>Wait for processing</strong> - The system will:
                                     <ul>
                                         <li>Parse the document structure</li>
@@ -2041,7 +2063,8 @@
                                                 intelligence: Educational implications</em> (pp. 3-31). Basic Books.</p>
 
                                         <p>Bar-On, R. (2006). The Bar-On model of emotional-social intelligence (ESI).
-                                            <em>Psicothema, 18</em>, 13-25.</p>
+                                            <em>Psicothema, 18</em>, 13-25.
+                                        </p>
 
                                         <p>[[/style]]</p>
                                     </div>
@@ -2058,7 +2081,8 @@
                                                 intelligence: Educational implications</cite> (pp. 3-31). Basic Books.
                                         </p>
                                         <p>Bar-On, R. (2006). The Bar-On model of emotional-social intelligence (ESI).
-                                            <cite>Psicothema, 18</cite>, 13-25.</p>
+                                            <cite>Psicothema, 18</cite>, 13-25.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -2812,7 +2836,8 @@ function getInterpretation(score) {
                                 <li>Verify no nested style tags (one inside another)</li>
                                 <li>Check for typos in style tag names</li>
                                 <li>Ensure no extra spaces: <code>[[style:read]]</code> not
-                                    <code>[[ style:read ]]</code></li>
+                                    <code>[[ style:read ]]</code>
+                                </li>
                             </ul>
                         </div>
 

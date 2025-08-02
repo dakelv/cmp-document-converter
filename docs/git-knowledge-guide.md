@@ -245,7 +245,41 @@ git log -p filename.html
 git show commit-hash --name-only
 ```
 
-### **Scenario 17: Cleaning Up**
+### **Scenario 17: Getting Production Version Without Switching Branches**
+```bash
+# Problem: You're on a feature branch but need the production version of a file
+
+# Solution: Export main branch version to a temporary file
+git show main:filename.json > filename-production.json
+
+# Example with our workflow file:
+git show main:cmp-document-converter.json > cmp-document-converter-production.json
+
+# Now you have both versions:
+# - cmp-document-converter.json (your current working version)
+# - cmp-document-converter-production.json (production version)
+
+# Upload the production version to n8n, then clean up:
+del cmp-document-converter-production.json
+```
+
+### **Scenario 18: Understanding Local vs Remote Storage**
+```bash
+# Key insight: When you checkout branches, you're NOT downloading from GitHub
+# All branch versions are already stored locally in .git/objects/
+
+# This is LOCAL operation (no network):
+git checkout main                    # Switch to main branch view
+git checkout feature-branch          # Switch to feature branch view
+git show main:filename.json          # Show main version of file
+
+# These require NETWORK (downloading):
+git clone                           # Initial download of repository
+git fetch                          # Download new commits from remote
+git pull                           # Download and merge new commits
+```
+
+### **Scenario 19: Cleaning Up**
 ```bash
 # See what would be deleted:
 git clean -n

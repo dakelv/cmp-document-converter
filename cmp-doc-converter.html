@@ -481,9 +481,13 @@
                         if (stack.length === 0) {
                             // Orphaned closing tag
                             const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
-                            const errorMsg = `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag.\n\nCode context:\n${contextInfo.formattedContext}`;
+                            const errorMsg = {
+                                type: 'orphaned_closing',
+                                message: `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag.`,
+                                codeContext: contextInfo.formattedContext
+                            };
                             errors.push(errorMsg);
-                            log(`❌ ERROR: ${errorMsg}`);
+                            log(`❌ ERROR: ${errorMsg.message}`);
                         } else {
                             // Match with most recent opening tag (LIFO - Last In, First Out)
                             const openingTag = stack.pop();
@@ -499,9 +503,13 @@
                 if (stack.length > 0) {
                     stack.forEach(unclosedTag => {
                         const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
-                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag.\n\nCode context:\n${contextInfo.formattedContext}`;
+                        const errorMsg = {
+                            type: 'missing_closing',
+                            message: `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag.`,
+                            codeContext: contextInfo.formattedContext
+                        };
                         errors.push(errorMsg);
-                        log(`❌ ERROR: ${errorMsg}`);
+                        log(`❌ ERROR: ${errorMsg.message}`);
                     });
                 }
                 
@@ -534,9 +542,13 @@
                             if (isProperlyNested) {
                                 // This is actual nesting - not allowed in our style system
                                 const contextInfo = getContextWithLineNumber(htmlContent, otherTag.position);
-                                const errorMsg = `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested.\n\nCode context:\n${contextInfo.formattedContext}`;
+                                const errorMsg = {
+                                    type: 'nested_blocks',
+                                    message: `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested.`,
+                                    codeContext: contextInfo.formattedContext
+                                };
                                 errors.push(errorMsg);
-                                log(`❌ ERROR: ${errorMsg}`);
+                                log(`❌ ERROR: ${errorMsg.message}`);
                             }
                         }
                     }
@@ -612,12 +624,21 @@
                 errorDiv.style.borderRadius = '5px';
                 errorDiv.style.backgroundColor = '#fff5f5';
                 
-                // Split error message and code context
+                // Handle structured error object or legacy string format
                 console.log('Raw error:', error);
-                const parts = error.split('\n\nCode context:\n');
-                console.log('Split parts:', parts);
-                const errorMessage = parts[0];
-                const codeContext = parts[1] || '';
+                let errorMessage, codeContext;
+                
+                if (typeof error === 'object' && error.message) {
+                    // New structured format
+                    errorMessage = error.message;
+                    codeContext = error.codeContext || '';
+                } else {
+                    // Legacy string format (fallback)
+                    const parts = error.split('\n\nCode context:\n');
+                    errorMessage = parts[0];
+                    codeContext = parts[1] || '';
+                }
+                
                 console.log('Error message:', errorMessage);
                 console.log('Code context:', codeContext);
                 
@@ -710,7 +731,7 @@
                     log('❌ Style tag validation failed!');
                     log(`Found ${validation.errors.length} error(s):`);
                     validation.errors.forEach((error, index) => {
-                        log(`${index + 1}. ${error}`);
+                        log(`${index + 1}. ${error.message || error}`);
                     });
                     
                     // Show detailed error message to user with formatted code

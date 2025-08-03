@@ -1531,25 +1531,39 @@ Use 7-Zip, WinRAR, or similar tool to extract this TAR archive.
         // Function to initialize collapsible sections
         function initializeCollapsibles() {
             const collapsibles = document.querySelectorAll('.collapsible');
+            let newInitializations = 0;
+            
             collapsibles.forEach(function (collapsible) {
-                collapsible.addEventListener('click', function () {
-                    this.classList.toggle('active');
-                    const content = this.nextElementSibling;
-                    content.classList.toggle('active');
+                // Check if this element already has the collapsible functionality
+                if (!collapsible.hasAttribute('data-collapsible-initialized')) {
+                    // Mark as initialized to prevent duplicate event listeners
+                    collapsible.setAttribute('data-collapsible-initialized', 'true');
+                    newInitializations++;
+                    
+                    collapsible.addEventListener('click', function () {
+                        this.classList.toggle('active');
+                        const content = this.nextElementSibling;
+                        content.classList.toggle('active');
 
-                    // Handle dynamic text for files list toggle
-                    if (this.id === 'filesListToggle') {
-                        const hintSpan = this.querySelector('.toggle-hint');
-                        if (hintSpan) {
-                            if (this.classList.contains('active')) {
-                                hintSpan.textContent = '(Click to hide)';
-                            } else {
-                                hintSpan.textContent = '(Click to show)';
+                        // Handle dynamic text for files list toggle
+                        if (this.id === 'filesListToggle') {
+                            const hintSpan = this.querySelector('.toggle-hint');
+                            if (hintSpan) {
+                                if (this.classList.contains('active')) {
+                                    hintSpan.textContent = '(Click to hide)';
+                                } else {
+                                    hintSpan.textContent = '(Click to show)';
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             });
+            
+            // Debug logging for verification
+            if (newInitializations > 0) {
+                console.log(`🔧 Initialized ${newInitializations} new collapsible elements (${collapsibles.length} total found)`);
+            }
         }
 
         // Call initializeCollapsibles when results are displayed

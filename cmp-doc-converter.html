@@ -303,13 +303,28 @@
             return beforePosition.split('\n').length;
         }
 
-        // Helper function to get context with line number
-        function getContextWithLineNumber(content, position, contextLength = 50) {
-            const lineNumber = getLineNumber(content, position);
-            const context = content.substring(Math.max(0, position - contextLength), position + contextLength * 2);
+        // Helper function to get context with line numbers and formatted code
+        function getContextWithLineNumber(content, position, contextLines = 2) {
+            const lines = content.split('\n');
+            const targetLineIndex = getLineNumber(content, position) - 1; // Convert to 0-based index
+            
+            // Calculate the range of lines to show
+            const startLine = Math.max(0, targetLineIndex - contextLines);
+            const endLine = Math.min(lines.length - 1, targetLineIndex + contextLines);
+            
+            // Build the formatted context with line numbers
+            let formattedContext = '';
+            for (let i = startLine; i <= endLine; i++) {
+                const lineNumber = (i + 1).toString().padStart(3, ' '); // 3-digit line numbers
+                const indicator = i === targetLineIndex ? '→' : ' '; // Arrow points to the problem line
+                const line = lines[i] || '';
+                formattedContext += `${lineNumber}${indicator} ${line}\n`;
+            }
+            
             return {
-                lineNumber: lineNumber,
-                context: context.replace(/\n/g, ' ')
+                lineNumber: targetLineIndex + 1, // Convert back to 1-based
+                context: content.substring(Math.max(0, position - 50), position + 100).replace(/\n/g, ' '), // Single line context for backwards compatibility
+                formattedContext: formattedContext.trim() // Multi-line context with line numbers
             };
         }
 
@@ -460,7 +475,7 @@
                         if (stack.length === 0) {
                             // Orphaned closing tag
                             const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
-                            const errorMsg = `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag. Context: "...${contextInfo.context}..."`;
+                            const errorMsg = `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag.\n\nCode context:\n${contextInfo.formattedContext}`;
                             errors.push(errorMsg);
                             log(`❌ ERROR: ${errorMsg}`);
                         } else {
@@ -478,7 +493,7 @@
                 if (stack.length > 0) {
                     stack.forEach(unclosedTag => {
                         const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
-                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag. Context: "...${contextInfo.context}..."`;
+                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag.\n\nCode context:\n${contextInfo.formattedContext}`;
                         errors.push(errorMsg);
                         log(`❌ ERROR: ${errorMsg}`);
                     });
@@ -513,7 +528,7 @@
                             if (isProperlyNested) {
                                 // This is actual nesting - not allowed in our style system
                                 const contextInfo = getContextWithLineNumber(htmlContent, otherTag.position);
-                                const errorMsg = `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested. Context: "...${contextInfo.context}..."`;
+                                const errorMsg = `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested.\n\nCode context:\n${contextInfo.formattedContext}`;
                                 errors.push(errorMsg);
                                 log(`❌ ERROR: ${errorMsg}`);
                             }
@@ -523,6 +538,132 @@
             }
             
             return { errors, warnings };
+        }
+
+        // Function to display style validation errors with formatted code
+        function showStyleValidationErrors(errors) {
+            // Create modal HTML
+            const modalHtml = `
+                <div id="errorModal" style="
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(0,0,0,0.7); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    z-index: 10000;
+                ">
+                    <div style="
+                        background: white; 
+                        padding: 30px; 
+                        border-radius: 10px; 
+                        max-width: 80vw; 
+                        max-height: 80vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e74c3c; padding-bottom: 15px;">
+                            <h2 style="margin: 0; color: #e74c3c; font-size: 1.5rem;">
+                                ❌ Style Tag Validation Failed
+                            </h2>
+                            <button onclick="closeErrorModal()" style="
+                                background: #e74c3c; 
+                                color: white; 
+                                border: none; 
+                                padding: 8px 15px; 
+                                border-radius: 5px; 
+                                cursor: pointer; 
+                                font-size: 1rem;
+                            ">✖ Close</button>
+                        </div>
+                        <p style="margin-bottom: 20px; color: #333; font-size: 1.1rem;">
+                            Found <strong>${errors.length}</strong> error${errors.length > 1 ? 's' : ''} in your HTML document:
+                        </p>
+                        <div id="errorList"></div>
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #17a2b8;">
+                            <p style="margin: 0; color: #17a2b8; font-weight: bold;">💡 How to fix:</p>
+                            <p style="margin: 5px 0 0 0; color: #333; font-size: 0.95rem;">
+                                Edit your HTML document to fix the issues shown above, then try uploading again.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Populate error list
+            const errorList = document.getElementById('errorList');
+            errors.forEach((error, index) => {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.marginBottom = '25px';
+                errorDiv.style.padding = '15px';
+                errorDiv.style.border = '1px solid #dc3545';
+                errorDiv.style.borderRadius = '5px';
+                errorDiv.style.backgroundColor = '#fff5f5';
+                
+                // Split error message and code context
+                const parts = error.split('\\n\\nCode context:\\n');
+                const errorMessage = parts[0];
+                const codeContext = parts[1] || '';
+                
+                errorDiv.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color: #dc3545; font-size: 1.1rem;">
+                        Error ${index + 1}:
+                    </h4>
+                    <p style="margin: 0 0 15px 0; color: #333; font-size: 1rem; line-height: 1.4;">
+                        ${errorMessage}
+                    </p>
+                    ${codeContext ? `
+                        <div style="margin-top: 15px;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold; color: #495057; font-size: 0.95rem;">Code context:</p>
+                            <pre style="
+                                background: #f8f9fa; 
+                                border: 1px solid #dee2e6; 
+                                border-radius: 4px; 
+                                padding: 12px; 
+                                margin: 0; 
+                                font-family: 'Courier New', Consolas, Monaco, monospace; 
+                                font-size: 0.9rem; 
+                                line-height: 1.3; 
+                                color: #212529;
+                                overflow-x: auto;
+                                white-space: pre;
+                            ">${codeContext}</pre>
+                        </div>
+                    ` : ''}
+                `;
+                
+                errorList.appendChild(errorDiv);
+            });
+            
+            // Add global close function
+            window.closeErrorModal = function() {
+                const modal = document.getElementById('errorModal');
+                if (modal) {
+                    modal.remove();
+                    delete window.closeErrorModal;
+                }
+            };
+            
+            // Close on background click
+            document.getElementById('errorModal').addEventListener('click', function(e) {
+                if (e.target.id === 'errorModal') {
+                    closeErrorModal();
+                }
+            });
+            
+            // Close on Escape key
+            document.addEventListener('keydown', function escapeHandler(e) {
+                if (e.key === 'Escape') {
+                    closeErrorModal();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            });
         }
 
         async function convertDocument() {
@@ -560,9 +701,8 @@
                         log(`${index + 1}. ${error}`);
                     });
                     
-                    // Show detailed error message to user
-                    const errorMessage = `Style Tag Validation Failed!\n\nFound ${validation.errors.length} error(s):\n\n${validation.errors.map((error, index) => `${index + 1}. ${error}`).join('\n\n')}\n\nPlease fix these issues in your HTML document before uploading.`;
-                    alert(errorMessage);
+                    // Show detailed error message to user with formatted code
+                    showStyleValidationErrors(validation.errors);
                     
                     log('💡 Upload cancelled - please fix style tag issues and try again');
                     return; // Stop processing here

@@ -405,60 +405,101 @@
                 log(`❌ ERROR: ${errorMsg}`);
             }
             
-            // Check for proper pairing and nesting
-            if (openingTags.length > 0) {
+            // Check for proper pairing and structure
+            if (openingTags.length > 0 || closingTags.length > 0) {
                 // Sort both arrays by position
                 openingTags.sort((a, b) => a.position - b.position);
                 closingTags.sort((a, b) => a.position - b.position);
                 
-                // Check for proper pairing using stack
-                const stack = [];
+                // Create combined array of all tags with their positions
                 const allTags = [];
                 
-                // Combine and sort all tags by position
+                // Add opening tags
                 openingTags.forEach(tag => {
                     allTags.push({ ...tag, tagType: 'opening' });
                 });
+                
+                // Add closing tags
                 closingTags.forEach(tag => {
                     allTags.push({ ...tag, tagType: 'closing', type: 'closing' });
                 });
                 
+                // Sort all tags by position
                 allTags.sort((a, b) => a.position - b.position);
                 
-                // Process tags in order to check pairing and nesting
+                // Process tags using improved stack-based validation
+                const stack = [];
+                const matchedPairs = [];
+                
                 for (let i = 0; i < allTags.length; i++) {
                     const tag = allTags[i];
                     
                     if (tag.tagType === 'opening') {
-                        // Check for nesting (not allowed)
-                        if (stack.length > 0) {
-                            const context = htmlContent.substring(Math.max(0, tag.position - 50), tag.position + 100);
-                            const errorMsg = `Nesting detected: [[style:${tag.type}]] found inside another style block. Nesting is not allowed. Context: "...${context.replace(/\n/g, ' ')}..."`;
-                            errors.push(errorMsg);
-                            log(`❌ ERROR: ${errorMsg}`);
-                        }
+                        // Simply push opening tag to stack - we'll check for proper structure later
                         stack.push(tag);
+                        log(`🔍 Found opening: [[style:${tag.type}]] at position ${tag.position}`);
+                        
                     } else if (tag.tagType === 'closing') {
                         if (stack.length === 0) {
+                            // Orphaned closing tag
                             const context = htmlContent.substring(Math.max(0, tag.position - 50), tag.position + 100);
-                            const errorMsg = `Orphaned closing tag: Found [[/style]] without matching opening tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                            const errorMsg = `Orphaned closing tag: Found [[/style]] without any matching opening tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
                             errors.push(errorMsg);
                             log(`❌ ERROR: ${errorMsg}`);
                         } else {
+                            // Match with most recent opening tag (LIFO - Last In, First Out)
                             const openingTag = stack.pop();
+                            matchedPairs.push({ opening: openingTag, closing: tag });
                             log(`✅ Matched: [[style:${openingTag.type}]] with [[/style]]`);
                         }
                     }
                 }
                 
-                // Check for unclosed opening tags
+                // Check for unclosed opening tags (missing closing tags)
                 if (stack.length > 0) {
                     stack.forEach(unclosedTag => {
                         const context = htmlContent.substring(Math.max(0, unclosedTag.position - 50), unclosedTag.position + 100);
-                        const errorMsg = `Unclosed opening tag: [[style:${unclosedTag.type}]] found without matching [[/style]]. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] is missing its [[/style]] closing tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
                         errors.push(errorMsg);
                         log(`❌ ERROR: ${errorMsg}`);
                     });
+                }
+                
+                // Check for actual nesting violations (this is separate from missing closing tags)
+                // True nesting would be: [[style:a]][[style:b]][[/style]][[/style]]
+                // We detect this by checking if any opening tag occurs between a matched pair
+                for (let i = 0; i < matchedPairs.length; i++) {
+                    const pair = matchedPairs[i];
+                    const openingPos = pair.opening.position;
+                    const closingPos = pair.closing.position;
+                    
+                    // Check if any other opening tag falls between this pair
+                    for (let j = 0; j < openingTags.length; j++) {
+                        const otherTag = openingTags[j];
+                        if (otherTag !== pair.opening && 
+                            otherTag.position > openingPos && 
+                            otherTag.position < closingPos) {
+                            
+                            // Check if this other tag also has its closing within the same range
+                            let isProperlyNested = false;
+                            for (let k = 0; k < matchedPairs.length; k++) {
+                                const otherPair = matchedPairs[k];
+                                if (otherPair.opening === otherTag && 
+                                    otherPair.closing.position < closingPos) {
+                                    isProperlyNested = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (isProperlyNested) {
+                                // This is actual nesting - not allowed in our style system
+                                const context = htmlContent.substring(Math.max(0, otherTag.position - 50), otherTag.position + 100);
+                                const errorMsg = `Nested style blocks detected: [[style:${otherTag.type}]] is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                                errors.push(errorMsg);
+                                log(`❌ ERROR: ${errorMsg}`);
+                            }
+                        }
+                    }
                 }
             }
             

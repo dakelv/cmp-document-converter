@@ -613,9 +613,13 @@
                 errorDiv.style.backgroundColor = '#fff5f5';
                 
                 // Split error message and code context
-                const parts = error.split('\\n\\nCode context:\\n');
+                console.log('Raw error:', error);
+                const parts = error.split('\n\nCode context:\n');
+                console.log('Split parts:', parts);
                 const errorMessage = parts[0];
                 const codeContext = parts[1] || '';
+                console.log('Error message:', errorMessage);
+                console.log('Code context:', codeContext);
                 
                 errorDiv.innerHTML = `
                     <h4 style="margin: 0 0 10px 0; color: #dc3545; font-size: 1.1rem;">

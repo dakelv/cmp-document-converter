@@ -312,13 +312,19 @@
             const startLine = Math.max(0, targetLineIndex - contextLines);
             const endLine = Math.min(lines.length - 1, targetLineIndex + contextLines);
             
-            // Build the formatted context with line numbers
+            // Build the formatted context with line numbers on the same line
             let formattedContext = '';
             for (let i = startLine; i <= endLine; i++) {
                 const lineNumber = (i + 1).toString().padStart(3, ' '); // 3-digit line numbers
                 const indicator = i === targetLineIndex ? '→' : ' '; // Arrow points to the problem line
-                const line = lines[i] || '';
-                formattedContext += `${lineNumber}${indicator} ${line}\n`;
+                const line = (lines[i] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // Escape HTML
+                
+                // Add special formatting for the problem line
+                if (i === targetLineIndex) {
+                    formattedContext += `<span style="color: #f56565; font-weight: bold;">${lineNumber}${indicator}</span> ${line}\n`;
+                } else {
+                    formattedContext += `<span style="color: #a0aec0;">${lineNumber}${indicator}</span> ${line}\n`;
+                }
             }
             
             return {
@@ -622,17 +628,19 @@
                         <div style="margin-top: 15px;">
                             <p style="margin: 0 0 8px 0; font-weight: bold; color: #495057; font-size: 0.95rem;">Code context:</p>
                             <pre style="
-                                background: #f8f9fa; 
-                                border: 1px solid #dee2e6; 
-                                border-radius: 4px; 
-                                padding: 12px; 
+                                background: #2d3748; 
+                                border: 1px solid #4a5568; 
+                                border-radius: 6px; 
+                                padding: 16px; 
                                 margin: 0; 
-                                font-family: 'Courier New', Consolas, Monaco, monospace; 
-                                font-size: 0.9rem; 
-                                line-height: 1.3; 
-                                color: #212529;
+                                font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+                                font-size: 0.85rem; 
+                                line-height: 1.5; 
+                                color: #e2e8f0;
                                 overflow-x: auto;
                                 white-space: pre;
+                                text-align: left;
+                                tab-size: 4;
                             ">${codeContext}</pre>
                         </div>
                     ` : ''}

@@ -297,6 +297,22 @@
             log('🗑️ File selection cleared');
         }
 
+        // Helper function to get line number from character position
+        function getLineNumber(content, position) {
+            const beforePosition = content.substring(0, position);
+            return beforePosition.split('\n').length;
+        }
+
+        // Helper function to get context with line number
+        function getContextWithLineNumber(content, position, contextLength = 50) {
+            const lineNumber = getLineNumber(content, position);
+            const context = content.substring(Math.max(0, position - contextLength), position + contextLength * 2);
+            return {
+                lineNumber: lineNumber,
+                context: context.replace(/\n/g, ' ')
+            };
+        }
+
         // Client-side style tag validation function
         function validateStyleTags(htmlContent) {
             const errors = [];
@@ -327,7 +343,7 @@
                 for (let i = innerStart; i <= innerEnd; i++) {
                     usedPositions.add(i);
                 }
-                log(`✅ Found P-wrapped opening: [[style:${styleType}]]`);
+                log(`✅ Found P-wrapped opening: [[style:${styleType}]] at line ${getLineNumber(htmlContent, openingTag.position)}`);
             }
             
             // Then, find unwrapped opening tags that don't overlap
@@ -348,7 +364,7 @@
                         pattern: 'Unwrapped opening'
                     };
                     openingTags.push(openingTag);
-                    log(`✅ Found unwrapped opening: [[style:${styleType}]]`);
+                    log(`✅ Found unwrapped opening: [[style:${styleType}]] at line ${getLineNumber(htmlContent, openingTag.position)}`);
                 }
             }
             
@@ -373,7 +389,7 @@
                 for (let i = innerStart; i <= innerEnd; i++) {
                     usedClosingPositions.add(i);
                 }
-                log(`✅ Found P-wrapped closing: [[/style]]`);
+                log(`✅ Found P-wrapped closing: [[/style]] at line ${getLineNumber(htmlContent, closingTag.position)}`);
             }
             
             // Then, find unwrapped closing tags that don't overlap
@@ -392,7 +408,7 @@
                         pattern: 'Unwrapped closing'
                     };
                     closingTags.push(closingTag);
-                    log(`✅ Found unwrapped closing: [[/style]]`);
+                    log(`✅ Found unwrapped closing: [[/style]] at line ${getLineNumber(htmlContent, closingTag.position)}`);
                 }
             }
             
@@ -437,20 +453,23 @@
                     if (tag.tagType === 'opening') {
                         // Simply push opening tag to stack - we'll check for proper structure later
                         stack.push(tag);
-                        log(`🔍 Found opening: [[style:${tag.type}]] at position ${tag.position}`);
+                        const lineNumber = getLineNumber(htmlContent, tag.position);
+                        log(`🔍 Found opening: [[style:${tag.type}]] at line ${lineNumber} (position ${tag.position})`);
                         
                     } else if (tag.tagType === 'closing') {
                         if (stack.length === 0) {
                             // Orphaned closing tag
-                            const context = htmlContent.substring(Math.max(0, tag.position - 50), tag.position + 100);
-                            const errorMsg = `Orphaned closing tag: Found [[/style]] without any matching opening tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                            const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
+                            const errorMsg = `Orphaned closing tag: Found [[/style]] without any matching opening tag at line ${contextInfo.lineNumber}. Context: "...${contextInfo.context}..."`;
                             errors.push(errorMsg);
                             log(`❌ ERROR: ${errorMsg}`);
                         } else {
                             // Match with most recent opening tag (LIFO - Last In, First Out)
                             const openingTag = stack.pop();
                             matchedPairs.push({ opening: openingTag, closing: tag });
-                            log(`✅ Matched: [[style:${openingTag.type}]] with [[/style]]`);
+                            const openingLineNumber = getLineNumber(htmlContent, openingTag.position);
+                            const closingLineNumber = getLineNumber(htmlContent, tag.position);
+                            log(`✅ Matched: [[style:${openingTag.type}]] (line ${openingLineNumber}) with [[/style]] (line ${closingLineNumber})`);
                         }
                     }
                 }
@@ -458,8 +477,8 @@
                 // Check for unclosed opening tags (missing closing tags)
                 if (stack.length > 0) {
                     stack.forEach(unclosedTag => {
-                        const context = htmlContent.substring(Math.max(0, unclosedTag.position - 50), unclosedTag.position + 100);
-                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] is missing its [[/style]] closing tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                        const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
+                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] is missing its [[/style]] closing tag at line ${contextInfo.lineNumber}. Context: "...${contextInfo.context}..."`;
                         errors.push(errorMsg);
                         log(`❌ ERROR: ${errorMsg}`);
                     });
@@ -493,8 +512,8 @@
                             
                             if (isProperlyNested) {
                                 // This is actual nesting - not allowed in our style system
-                                const context = htmlContent.substring(Math.max(0, otherTag.position - 50), otherTag.position + 100);
-                                const errorMsg = `Nested style blocks detected: [[style:${otherTag.type}]] is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                                const contextInfo = getContextWithLineNumber(htmlContent, otherTag.position);
+                                const errorMsg = `Nested style blocks detected: [[style:${otherTag.type}]] is nested inside [[style:${pair.opening.type}]] at line ${contextInfo.lineNumber}. Style blocks cannot be nested. Context: "...${contextInfo.context}..."`;
                                 errors.push(errorMsg);
                                 log(`❌ ERROR: ${errorMsg}`);
                             }

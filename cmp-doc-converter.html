@@ -297,6 +297,174 @@
             log('🗑️ File selection cleared');
         }
 
+        // Client-side style tag validation function
+        function validateStyleTags(htmlContent) {
+            const errors = [];
+            const warnings = [];
+            
+            log('🔍 Validating style tags in HTML content...');
+            
+            // Find all style opening tags - handle P-wrapped first, then unwrapped only if not already found
+            const openingTags = [];
+            const usedPositions = new Set();
+            
+            // First, find P-wrapped opening tags
+            const pWrappedOpeningPattern = /<p>\s*\[\[style:\s*([\w]+)\]\]\s*<\/p>/gi;
+            let match;
+            while ((match = pWrappedOpeningPattern.exec(htmlContent)) !== null) {
+                const styleType = match[1] ? match[1].toLowerCase() : 'unknown';
+                const openingTag = {
+                    type: styleType,
+                    fullMatch: match[0],
+                    position: match.index,
+                    endPosition: match.index + match[0].length,
+                    pattern: 'P-wrapped opening'
+                };
+                openingTags.push(openingTag);
+                // Mark positions as used to avoid duplicate matching
+                const innerStart = match.index + match[0].indexOf('[[style:');
+                const innerEnd = innerStart + match[0].substring(match[0].indexOf('[[style:')).indexOf(']]') + 2;
+                for (let i = innerStart; i <= innerEnd; i++) {
+                    usedPositions.add(i);
+                }
+                log(`✅ Found P-wrapped opening: [[style:${styleType}]]`);
+            }
+            
+            // Then, find unwrapped opening tags that don't overlap
+            const unwrappedOpeningPattern = /\[\[style:\s*([\w]+)\]\]/gi;
+            const regex2 = new RegExp(unwrappedOpeningPattern.source, unwrappedOpeningPattern.flags);
+            while ((match = regex2.exec(htmlContent)) !== null) {
+                // Check if this position overlaps with P-wrapped tags
+                const isOverlapping = Array.from({length: match[0].length}, (_, i) => match.index + i)
+                    .some(pos => usedPositions.has(pos));
+                
+                if (!isOverlapping) {
+                    const styleType = match[1] ? match[1].toLowerCase() : 'unknown';
+                    const openingTag = {
+                        type: styleType,
+                        fullMatch: match[0],
+                        position: match.index,
+                        endPosition: match.index + match[0].length,
+                        pattern: 'Unwrapped opening'
+                    };
+                    openingTags.push(openingTag);
+                    log(`✅ Found unwrapped opening: [[style:${styleType}]]`);
+                }
+            }
+            
+            // Find all style closing tags - handle P-wrapped first, then unwrapped
+            const closingTags = [];
+            const usedClosingPositions = new Set();
+            
+            // First, find P-wrapped closing tags
+            const pWrappedClosingPattern = /<p>\s*\[\[\/style\]\]\s*<\/p>/gi;
+            const regex3 = new RegExp(pWrappedClosingPattern.source, pWrappedClosingPattern.flags);
+            while ((match = regex3.exec(htmlContent)) !== null) {
+                const closingTag = {
+                    fullMatch: match[0],
+                    position: match.index,
+                    endPosition: match.index + match[0].length,
+                    pattern: 'P-wrapped closing'
+                };
+                closingTags.push(closingTag);
+                // Mark positions as used
+                const innerStart = match.index + match[0].indexOf('[[/style]]');
+                const innerEnd = innerStart + 10; // length of [[/style]]
+                for (let i = innerStart; i <= innerEnd; i++) {
+                    usedClosingPositions.add(i);
+                }
+                log(`✅ Found P-wrapped closing: [[/style]]`);
+            }
+            
+            // Then, find unwrapped closing tags that don't overlap
+            const unwrappedClosingPattern = /\[\[\/style\]\]/gi;
+            const regex4 = new RegExp(unwrappedClosingPattern.source, unwrappedClosingPattern.flags);
+            while ((match = regex4.exec(htmlContent)) !== null) {
+                // Check if this position overlaps with P-wrapped tags
+                const isOverlapping = Array.from({length: match[0].length}, (_, i) => match.index + i)
+                    .some(pos => usedClosingPositions.has(pos));
+                
+                if (!isOverlapping) {
+                    const closingTag = {
+                        fullMatch: match[0],
+                        position: match.index,
+                        endPosition: match.index + match[0].length,
+                        pattern: 'Unwrapped closing'
+                    };
+                    closingTags.push(closingTag);
+                    log(`✅ Found unwrapped closing: [[/style]]`);
+                }
+            }
+            
+            log(`📊 Style tag summary: ${openingTags.length} opening, ${closingTags.length} closing`);
+            
+            // Check for basic count mismatch
+            if (openingTags.length !== closingTags.length) {
+                const errorMsg = `Style tag count mismatch: Found ${openingTags.length} opening tags but ${closingTags.length} closing tags. Each [[style:xxx]] must have a matching [[/style]].`;
+                errors.push(errorMsg);
+                log(`❌ ERROR: ${errorMsg}`);
+            }
+            
+            // Check for proper pairing and nesting
+            if (openingTags.length > 0) {
+                // Sort both arrays by position
+                openingTags.sort((a, b) => a.position - b.position);
+                closingTags.sort((a, b) => a.position - b.position);
+                
+                // Check for proper pairing using stack
+                const stack = [];
+                const allTags = [];
+                
+                // Combine and sort all tags by position
+                openingTags.forEach(tag => {
+                    allTags.push({ ...tag, tagType: 'opening' });
+                });
+                closingTags.forEach(tag => {
+                    allTags.push({ ...tag, tagType: 'closing', type: 'closing' });
+                });
+                
+                allTags.sort((a, b) => a.position - b.position);
+                
+                // Process tags in order to check pairing and nesting
+                for (let i = 0; i < allTags.length; i++) {
+                    const tag = allTags[i];
+                    
+                    if (tag.tagType === 'opening') {
+                        // Check for nesting (not allowed)
+                        if (stack.length > 0) {
+                            const context = htmlContent.substring(Math.max(0, tag.position - 50), tag.position + 100);
+                            const errorMsg = `Nesting detected: [[style:${tag.type}]] found inside another style block. Nesting is not allowed. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                            errors.push(errorMsg);
+                            log(`❌ ERROR: ${errorMsg}`);
+                        }
+                        stack.push(tag);
+                    } else if (tag.tagType === 'closing') {
+                        if (stack.length === 0) {
+                            const context = htmlContent.substring(Math.max(0, tag.position - 50), tag.position + 100);
+                            const errorMsg = `Orphaned closing tag: Found [[/style]] without matching opening tag. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                            errors.push(errorMsg);
+                            log(`❌ ERROR: ${errorMsg}`);
+                        } else {
+                            const openingTag = stack.pop();
+                            log(`✅ Matched: [[style:${openingTag.type}]] with [[/style]]`);
+                        }
+                    }
+                }
+                
+                // Check for unclosed opening tags
+                if (stack.length > 0) {
+                    stack.forEach(unclosedTag => {
+                        const context = htmlContent.substring(Math.max(0, unclosedTag.position - 50), unclosedTag.position + 100);
+                        const errorMsg = `Unclosed opening tag: [[style:${unclosedTag.type}]] found without matching [[/style]]. Context: "...${context.replace(/\n/g, ' ')}..."`;
+                        errors.push(errorMsg);
+                        log(`❌ ERROR: ${errorMsg}`);
+                    });
+                }
+            }
+            
+            return { errors, warnings };
+        }
+
         async function convertDocument() {
             const webhookUrl = document.getElementById('webhookUrl').value;
             const fileInput = document.getElementById('document');
@@ -320,6 +488,34 @@
 
                 const htmlContent = await file.text();
                 log(`✅ File content loaded (${htmlContent.length} characters)`);
+
+                // CLIENT-SIDE STYLE TAG VALIDATION
+                log('🔍 Performing client-side style tag validation...');
+                const validation = validateStyleTags(htmlContent);
+                
+                if (validation.errors.length > 0) {
+                    log('❌ Style tag validation failed!');
+                    log(`Found ${validation.errors.length} error(s):`);
+                    validation.errors.forEach((error, index) => {
+                        log(`${index + 1}. ${error}`);
+                    });
+                    
+                    // Show detailed error message to user
+                    const errorMessage = `Style Tag Validation Failed!\n\nFound ${validation.errors.length} error(s):\n\n${validation.errors.map((error, index) => `${index + 1}. ${error}`).join('\n\n')}\n\nPlease fix these issues in your HTML document before uploading.`;
+                    alert(errorMessage);
+                    
+                    log('💡 Upload cancelled - please fix style tag issues and try again');
+                    return; // Stop processing here
+                }
+                
+                if (validation.warnings.length > 0) {
+                    log(`⚠️ Style tag validation completed with ${validation.warnings.length} warning(s):`);
+                    validation.warnings.forEach((warning, index) => {
+                        log(`${index + 1}. ${warning}`);
+                    });
+                } else {
+                    log('✅ Style tag validation passed - no errors found');
+                }
 
                 // Auto-detect LO number from filename
                 const loMatch = file.name.match(/LO(\d+)/i);

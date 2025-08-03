@@ -460,7 +460,7 @@
                         if (stack.length === 0) {
                             // Orphaned closing tag
                             const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
-                            const errorMsg = `Orphaned closing tag: Found [[/style]] without any matching opening tag at line ${contextInfo.lineNumber}. Context: "...${contextInfo.context}..."`;
+                            const errorMsg = `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag. Context: "...${contextInfo.context}..."`;
                             errors.push(errorMsg);
                             log(`❌ ERROR: ${errorMsg}`);
                         } else {
@@ -478,7 +478,7 @@
                 if (stack.length > 0) {
                     stack.forEach(unclosedTag => {
                         const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
-                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] is missing its [[/style]] closing tag at line ${contextInfo.lineNumber}. Context: "...${contextInfo.context}..."`;
+                        const errorMsg = `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag. Context: "...${contextInfo.context}..."`;
                         errors.push(errorMsg);
                         log(`❌ ERROR: ${errorMsg}`);
                     });
@@ -513,7 +513,7 @@
                             if (isProperlyNested) {
                                 // This is actual nesting - not allowed in our style system
                                 const contextInfo = getContextWithLineNumber(htmlContent, otherTag.position);
-                                const errorMsg = `Nested style blocks detected: [[style:${otherTag.type}]] is nested inside [[style:${pair.opening.type}]] at line ${contextInfo.lineNumber}. Style blocks cannot be nested. Context: "...${contextInfo.context}..."`;
+                                const errorMsg = `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested. Context: "...${contextInfo.context}..."`;
                                 errors.push(errorMsg);
                                 log(`❌ ERROR: ${errorMsg}`);
                             }

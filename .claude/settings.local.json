@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(cp:*)",
+      "Bash(python3 -m json.tool:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(git checkout:*)",
+      "Bash(python -m json.tool cmp-document-converter.json)",
+      "Bash(node:*)",
+      "Bash(git restore:*)",
+      "Bash(rm:*)",
+      "Bash(git merge:*)",
+      "Bash(gh release create:*)",
+      "Bash(git pull:*)"
+    ],
+    "deny": []
+  }
+}

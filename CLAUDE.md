@@ -91,7 +91,7 @@ Webhook → Process Upload → Parse Sections → Generate HTML → Response
 
 1. **Word → HTML**: Manual conversion using Pandoc
 2. **Upload**: Use `cmp-doc-converter.html` interface
-3. **Processing**: N8N workflow handles sections and styling
+3. **Processing**: Client-side error checking to ensure style tags are matched. N8N workflow handles sections and styling
 4. **Download**: Individual files + request tables
 5. **LMS Upload**: Files ready for Brightspace
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug JS Test</title>
+    <script src="js/cmp-doc-converter-config.js"></script>
+</head>
+<body>
+    <button onclick="testFunction()">Test Button</button>
+    <div id="testOutput"></div>
+    
+    <script>
+        function testFunction() {
+            console.log('Button clicked!');
+            document.getElementById('testOutput').innerHTML = 'Button works!';
+            
+            // Test if MESSAGES is available
+            if (typeof MESSAGES !== 'undefined') {
+                console.log('MESSAGES object is available');
+                console.log('CONVERSION_START:', MESSAGES.CONVERSION_START);
+            } else {
+                console.log('MESSAGES object is NOT available');
+            }
+            
+            // Test if basic DOM manipulation works
+            const testDiv = document.getElementById('testOutput');
+            if (testDiv) {
+                testDiv.innerHTML += '<br>DOM manipulation works!';
+            }
+        }
+        
+        // Test on page load
+        window.onload = function() {
+            console.log('Page loaded');
+            console.log('MESSAGES available:', typeof MESSAGES !== 'undefined');
+            console.log('TEMPLATES available:', typeof TEMPLATES !== 'undefined');
+            console.log('UTILS available:', typeof UTILS !== 'undefined');
+        };
+    </script>
+</body>
+</html>

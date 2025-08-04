@@ -435,12 +435,7 @@
             
             log(`📊 Style tag summary: ${openingTags.length} opening, ${closingTags.length} closing`);
             
-            // Check for basic count mismatch
-            if (openingTags.length !== closingTags.length) {
-                const errorMsg = `Style tag count mismatch: Found ${openingTags.length} opening tags but ${closingTags.length} closing tags. Each [[style:xxx]] must have a matching [[/style]].`;
-                errors.push(errorMsg);
-                log(`❌ ERROR: ${errorMsg}`);
-            }
+            // Check for basic count mismatch - we'll consolidate this into specific errors below
             
             // Check for proper pairing and structure
             if (openingTags.length > 0 || closingTags.length > 0) {
@@ -467,6 +462,7 @@
                 // Process tags using improved stack-based validation
                 const stack = [];
                 const matchedPairs = [];
+                const orphanedClosingTags = [];
                 
                 for (let i = 0; i < allTags.length; i++) {
                     const tag = allTags[i];
@@ -479,15 +475,13 @@
                         
                     } else if (tag.tagType === 'closing') {
                         if (stack.length === 0) {
-                            // Orphaned closing tag
+                            // Collect orphaned closing tags for consolidated error
                             const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
-                            const errorMsg = {
-                                type: 'orphaned_closing',
-                                message: `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag.`,
-                                codeContext: contextInfo.formattedContext
-                            };
-                            errors.push(errorMsg);
-                            log(`❌ ERROR: ${errorMsg.message}`);
+                            orphanedClosingTags.push({
+                                position: tag.position,
+                                line: contextInfo.lineNumber,
+                                context: contextInfo.formattedContext
+                            });
                         } else {
                             // Match with most recent opening tag (LIFO - Last In, First Out)
                             const openingTag = stack.pop();
@@ -499,18 +493,40 @@
                     }
                 }
                 
+                // Consolidate orphaned closing tags into a single error
+                if (orphanedClosingTags.length > 0) {
+                    const errorMsg = {
+                        type: 'orphaned_closing',
+                        message: `Style tag count mismatch: Found ${orphanedClosingTags.length} orphaned closing tag${orphanedClosingTags.length > 1 ? 's' : ''} [[/style]] with no matching opening tag${orphanedClosingTags.length > 1 ? 's' : ''}.`,
+                        codeContext: orphanedClosingTags.map(tag => 
+                            `[[/style]] at line ${tag.line}\n${tag.context}`
+                        ).join('\n\n')
+                    };
+                    errors.push(errorMsg);
+                    log(`❌ ERROR: ${errorMsg.message}`);
+                }
+                
                 // Check for unclosed opening tags (missing closing tags)
                 if (stack.length > 0) {
-                    stack.forEach(unclosedTag => {
+                    // Create a single consolidated error for all missing closing tags
+                    const tagDetails = stack.map(unclosedTag => {
                         const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
-                        const errorMsg = {
-                            type: 'missing_closing',
-                            message: `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag.`,
-                            codeContext: contextInfo.formattedContext
+                        return {
+                            type: unclosedTag.type,
+                            line: contextInfo.lineNumber,
+                            context: contextInfo.formattedContext
                         };
-                        errors.push(errorMsg);
-                        log(`❌ ERROR: ${errorMsg.message}`);
                     });
+                    
+                    const errorMsg = {
+                        type: 'missing_closing',
+                        message: `Style tag count mismatch: Found ${openingTags.length} opening tags but only ${closingTags.length} closing tags. ${stack.length} opening tag${stack.length > 1 ? 's are' : ' is'} missing their [[/style]] closing tag${stack.length > 1 ? 's' : ''}.`,
+                        codeContext: tagDetails.map(detail => 
+                            `[[style:${detail.type}]] at line ${detail.line}\n${detail.context}`
+                        ).join('\n\n')
+                    };
+                    errors.push(errorMsg);
+                    log(`❌ ERROR: ${errorMsg.message}`);
                 }
                 
                 // Check for actual nesting violations (this is separate from missing closing tags)

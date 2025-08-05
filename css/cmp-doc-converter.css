@@ -325,22 +325,22 @@ select:focus {
 }
 
 .btn-success {
-    background: linear-gradient(135deg, var(--success-color), #20c997);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: var(--white);
 }
 
 .btn-warning {
-    background: linear-gradient(135deg, var(--warning-color), #fd7e14);
-    color: #212529;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--white);
 }
 
 .btn-info {
-    background: linear-gradient(135deg, var(--info-color), #20c997);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: var(--white);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, var(--secondary-color), #5a6268);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: var(--white);
 }
 

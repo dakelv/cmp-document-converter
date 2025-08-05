@@ -423,7 +423,7 @@
                     position: openMatch.index,
                     line: getLineNumber(htmlContent, openMatch.index)
                 });
-                log(`✅ Found opening: [[style:${styleType}]] at line ${getLineNumber(htmlContent, openMatch.index)}`);
+
             }
             
             // Find all closing tags with their positions
@@ -435,7 +435,7 @@
                     position: closeMatch.index,
                     line: getLineNumber(htmlContent, closeMatch.index)
                 });
-                log(`✅ Found closing: [[/style]] at line ${getLineNumber(htmlContent, closeMatch.index)}`);
+
             }
             
             log(`📊 Style tag summary: ${openingTags.length} opening, ${closingTags.length} closing`);
@@ -465,7 +465,7 @@
                     
                     if (tag.tagType === 'opening') {
                         stack.push(tag);
-                        log(`🔍 Found opening: [[style:${tag.type}]] at line ${tag.line} (position ${tag.position})`);
+
                     } else if (tag.tagType === 'closing') {
                         if (stack.length === 0) {
                             // Orphaned closing tag
@@ -478,7 +478,7 @@
                         } else {
                             // Match with most recent opening tag
                             const openingTag = stack.pop();
-                            log(`✅ Matched: [[style:${openingTag.type}]] (line ${openingTag.line}) with [[/style]] (line ${tag.line})`);
+
                         }
                     }
                 }
@@ -756,7 +756,6 @@
 
                 updateProgress(70, '📤 Sending to n8n...');
                 log('📤 Sending to n8n...');
-                log(`Payload size: ${JSON.stringify(payload).length} characters`);
 
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
@@ -780,17 +779,6 @@
 
                 updateProgress(100, '✅ Conversion complete!');
                 log('✅ Conversion successful!');
-                log(`Response data: ${JSON.stringify(result, null, 2)}`);
-                
-                // Debug: Check the actual structure of the response
-                console.log('Full response:', result);
-                console.log('Files array:', result.files);
-                if (result.files && result.files.length > 0) {
-                    console.log('First file structure:', result.files[0]);
-                    console.log('First file keys:', Object.keys(result.files[0]));
-                    console.log('First file content preview:', result.files[0].content?.substring(0, 50) || 'NO CONTENT');
-                    console.log('First file data preview:', result.files[0].data?.substring(0, 50) || 'NO DATA');
-                }
 
                 // Display results
                 displayResults(result);
@@ -1565,6 +1553,22 @@ Use 7-Zip, WinRAR, or similar tool to extract this TAR archive.
             if (savedUrl) {
                 document.getElementById('webhookUrl').value = savedUrl;
             }
+
+            // Initialize collapsible functionality
+            const collapsibles = document.querySelectorAll('.collapsible');
+            collapsibles.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        content.classList.remove('active');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        content.classList.add('active');
+                    }
+                });
+            });
         };
 
         // Save webhook URL to localStorage

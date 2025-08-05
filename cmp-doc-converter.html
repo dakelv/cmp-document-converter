@@ -109,7 +109,12 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="convertDocument()">🚀 Convert Document</button>
+                <button class="btn btn-primary" id="convertButton" onclick="convertDocument()" style="min-width: 280px; white-space: nowrap;">
+                    <span id="buttonText">🚀 Convert Document</span>
+                    <div id="progressBar" style="display: none; width: 100%; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin-top: 8px; overflow: hidden;">
+                        <div id="progressFill" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; transition: width 0.3s ease; border-radius: 2px;"></div>
+                    </div>
+                </button>
             </div>
 
             <div class="section">
@@ -639,6 +644,39 @@
             });
         }
 
+        // Progress tracking functions
+        function updateProgress(percentage, text) {
+            const button = document.getElementById('convertButton');
+            const buttonText = document.getElementById('buttonText');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            buttonText.textContent = text;
+            progressBar.style.display = 'block';
+            progressFill.style.width = percentage + '%';
+            
+            // Disable button during processing
+            button.disabled = true;
+            button.style.opacity = '0.8';
+            button.style.cursor = 'not-allowed';
+        }
+
+        function resetProgress() {
+            const button = document.getElementById('convertButton');
+            const buttonText = document.getElementById('buttonText');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            buttonText.textContent = '🚀 Convert Document';
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+            
+            // Re-enable button
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+        }
+
         async function convertDocument() {
             const webhookUrl = document.getElementById('webhookUrl').value;
             const fileInput = document.getElementById('document');
@@ -654,20 +692,26 @@
                 return;
             }
 
+            // Start progress tracking
+            updateProgress(10, '🔄 Starting conversion...');
             log(MESSAGES.CONVERSION_START);
 
             try {
                 const file = fileInput.files[0];
+                updateProgress(20, '📄 Reading file...');
                 log(`📄 Reading file: ${file.name} (${file.size} bytes)`);
 
                 const htmlContent = await file.text();
+                updateProgress(30, '✅ File loaded, validating...');
                 log(`✅ File content loaded (${htmlContent.length} characters)`);
 
                 // CLIENT-SIDE STYLE TAG VALIDATION
+                updateProgress(40, '🔍 Validating style tags...');
                 log('🔍 Performing client-side style tag validation...');
                 const validation = validateStyleTags(htmlContent);
                 
                 if (validation.errors.length > 0) {
+                    resetProgress();
                     log('❌ Style tag validation failed!');
                     
                     log(`Found ${validation.errors.length} total error${validation.errors.length > 1 ? 's' : ''}`);
@@ -684,15 +728,18 @@
                 }
                 
                 if (validation.warnings.length > 0) {
+                    updateProgress(50, '⚠️ Validation completed with warnings');
                     log(`⚠️ Style tag validation completed with ${validation.warnings.length} warning(s):`);
                     validation.warnings.forEach((warning, index) => {
                         log(`${index + 1}. ${warning}`);
                     });
                 } else {
+                    updateProgress(50, '✅ Validation passed');
                     log('✅ Style tag validation passed - no errors found');
                 }
 
                 // Auto-detect LO number from filename
+                updateProgress(60, '🔍 Processing file details...');
                 const loMatch = file.name.match(/LO(\d+)/i);
                 if (loMatch) {
                     learningOutcome = loMatch[1].padStart(2, '0');
@@ -707,6 +754,7 @@
                     learningOutcome: learningOutcome
                 };
 
+                updateProgress(70, '📤 Sending to n8n...');
                 log('📤 Sending to n8n...');
                 log(`Payload size: ${JSON.stringify(payload).length} characters`);
 
@@ -718,15 +766,19 @@
                     body: JSON.stringify(payload)
                 });
 
+                updateProgress(80, '📥 Processing response...');
                 log(`📥 Response received: ${response.status} ${response.statusText}`);
 
                 if (!response.ok) {
+                    resetProgress();
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
+                updateProgress(90, '🔄 Parsing results...');
                 const result = await response.json();
                 latestResult = result; // Store for download functionality
 
+                updateProgress(100, '✅ Conversion complete!');
                 log('✅ Conversion successful!');
                 log(`Response data: ${JSON.stringify(result, null, 2)}`);
                 
@@ -743,7 +795,13 @@
                 // Display results
                 displayResults(result);
 
+                // Reset progress after a short delay to show completion
+                setTimeout(() => {
+                    resetProgress();
+                }, 2000);
+
             } catch (error) {
+                resetProgress();
                 log(`❌ Conversion failed: ${error.message}`);
                 console.error('Conversion error:', error);
             }
@@ -822,7 +880,7 @@
                         }
                     });
 
-                    let filesHTML = '<button onclick="toggleGeneratedFiles()" style="background-color: #007bff; color: white; padding: 15px; width: 100%; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin: 10px 0; display: flex; justify-content: space-between; align-items: center;">📄 Generated HTML Files <span id="filesToggleIcon">➕</span></button>';
+                    let filesHTML = '<button onclick="toggleGeneratedFiles()" style="background-color: #007bff; color: white; padding: 15px; width: 100%; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin: 10px 0; display: flex; justify-content: space-between; align-items: center;"><span id="filesToggleText">📄 Generated HTML Files (Click to show)</span> <span id="filesToggleIcon">➕</span></button>';
                     filesHTML += '<div id="filesContainer" style="display: none; padding: 20px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; border: 1px solid #dee2e6;">';
 
                     // Sort recognized files alphabetically
@@ -1486,14 +1544,17 @@ Use 7-Zip, WinRAR, or similar tool to extract this TAR archive.
         function toggleGeneratedFiles() {
             const container = document.getElementById('filesContainer');
             const icon = document.getElementById('filesToggleIcon');
+            const text = document.getElementById('filesToggleText');
             
             if (container.style.display === 'none') {
                 container.style.display = 'block';
                 icon.textContent = '➖';
+                text.textContent = '📄 Generated HTML Files (Click to hide)';
                 log('📂 Revealed generated files');
             } else {
                 container.style.display = 'none';
                 icon.textContent = '➕';
+                text.textContent = '📄 Generated HTML Files (Click to show)';
                 log('📁 Hidden generated files');
             }
         }

@@ -1075,7 +1075,20 @@ function initializePage() {
 }
 
 // Initialize when page loads
-window.onload = initializePage;
+window.onload = function() {
+    initializePage();
+    
+    // Set the last updated date in the footer
+    const lastUpdatedElement = document.getElementById('lastUpdated');
+    if (lastUpdatedElement) {
+        const buildDate = new Date('2024-08-05'); // Update this date when making changes
+        lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+};
 
 // Debug: Log that the script has loaded
 console.log('CMP Document Converter main script loaded');

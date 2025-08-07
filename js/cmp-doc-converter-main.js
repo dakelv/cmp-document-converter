@@ -1076,18 +1076,35 @@ function initializePage() {
 
 // Initialize when page loads
 window.onload = function() {
-    initializePage();
-    
-    // Set the last updated date in the footer
-    const lastUpdatedElement = document.getElementById('lastUpdated');
-    if (lastUpdatedElement) {
-        const buildDate = new Date('2024-08-05'); // Update this date when making changes
-        lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    }
+    // Check access first, then initialize application
+    checkAccess().then(isAuthenticated => {
+        if (isAuthenticated) {
+            console.log('✅ Authentication successful - Initializing CMP Document Converter');
+            initializePage();
+            
+            // Set the last updated date in the footer
+            const lastUpdatedElement = document.getElementById('lastUpdated');
+            if (lastUpdatedElement) {
+                const buildDate = new Date('2025-08-07'); // Updated for authentication implementation
+                lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        } else {
+            console.log('❌ Authentication failed - Access denied');
+        }
+    }).catch(error => {
+        console.error('Authentication error:', error);
+        document.body.innerHTML = `
+            <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+                <h1 style="color: #dc3545;">Authentication Error</h1>
+                <p>Unable to verify access. Please try again or contact Learning Technologies.</p>
+                <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
+            </div>
+        `;
+    });
 };
 
 // Debug: Log that the script has loaded

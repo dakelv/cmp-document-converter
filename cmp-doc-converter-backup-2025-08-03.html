@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMP Document Converter</title>
+    <link rel="stylesheet" href="css/cmp-doc-converter.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/cmp-doc-converter-config.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 CMP Document Converter</h1>
+            <p>Transform your Word documents into Brightspace-ready HTML Files</p>
+        </div>
+
+        <div class="main-content">
+            <div class="alert alert-info">
+                <h3>📋 About This Tool</h3>
+                <p>This tool converts CMP-ready Word documents into individual HTML files. Each H1 section becomes a
+                    separate file optimized for Brightspace upload.</p>
+                <p><strong>Important:</strong> Review all generated files and insert all media/interactives before
+                    uploading to Brightspace.</p>
+                <p>Refer to the <a href="docs/cmp-document-converter-instructions.html" target="_new"><strong>complete
+                            instructions guide</strong></a> for detailed information on using this tool. </p>
+            </div>
+
+            <div class="step-card step-1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Convert Word to HTML</h3>
+                </div>
+                <p><strong>Use Pandoc (recommended) or a similar converter to generate HTML from your LO Word
+                        document.</strong></p>
+                <p>Recommended pandoc command:</p>
+                <div class="code-block">
+                    <code>pandoc input.docx -s -o output.html --extract-media=. --ascii</code>
+                </div>
+                <p><em>This extracts media files and ensures ASCII compatibility for web use.</em></p>
+            </div>
+
+            <div class="step-card step-2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Test Connection</h3>
+                </div>
+                <div class="input-group">
+                    <p>You can skip this step as it is for debugging only. Do not change the webhook URL unless
+                        instructed to do so.</p>
+                    <label for="webhookUrl">Webhook URL:</label>
+                    <input type="url" id="webhookUrl"
+                        value="https://learningtechnologies.app.n8n.cloud/webhook/cmp-document-upload">
+                </div>
+                <button class="btn btn-info" onclick="testWebhook()">🧪 Test Connection</button>
+                <div id="testResult"></div>
+            </div>
+
+            <div class="step-card step-3">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Upload & Convert</h3>
+                </div>
+                <div class="alert alert-warning" style="margin-bottom: 1rem;">
+                    <strong>⚠️ Important:</strong> Only HTML files (.html, .htm) are accepted. Other file types will be rejected automatically.
+                </div>
+                <div class="input-group">
+                    <label for="document">Upload your HTML document using one of the methods below:</label>
+                    <p style="margin: 0.5rem 0; color: #666; font-size: 0.9rem;">
+                        <strong>Method 1:</strong> Drag and drop your HTML file into the area below<br>
+                        <strong>Method 2:</strong> Click "Browse HTML Files" to select from your computer
+                    </p>
+                    
+                    <!-- Custom Drag & Drop File Area -->
+                    <div class="file-drop-zone" id="fileDropZone" 
+                         ondrop="handleDrop(event)" 
+                         ondragover="allowDrop(event)" 
+                         ondragleave="handleDragLeave(event)">
+                        <div class="drop-zone-content">
+                            <div class="drop-zone-icon">📁</div>
+                            <div class="drop-zone-text">
+                                <p><strong>Drag & Drop one HTML file here</strong></p>
+                                <p class="drop-zone-or">or</p>
+                                <button type="button" class="btn btn-secondary" onclick="triggerFileSelect()">
+                                    📂 Browse HTML Files
+                                </button>
+                            </div>
+                            <div class="drop-zone-hint">
+                                <small>Only HTML files (.html, .htm) are accepted</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden file input -->
+                    <input type="file" id="document" accept=".html,.htm" style="display: none;" title="Only HTML files (.html, .htm) are accepted">
+                    
+                    <!-- Selected file display -->
+                    <div id="selectedFileDisplay" style="display: none; margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px; border: 1px solid #c3e6cb;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <strong>📄 Selected file:</strong> <span id="selectedFileName"></span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelectedFile()">
+                                ❌ Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="convertDocument()">🚀 Convert Document</button>
+            </div>
+
+
+
+            <div class="section">
+                <button class="collapsible">📋 Debug Log</button>
+                <div class="content">
+                    <div id="debugLog" class="log">Ready to process your document...\n</div>
+                    <button class="btn btn-secondary" onclick="clearLog()">🗑️ Clear Log</button>
+                </div>
+            </div>
+
+            <div id="debugInfo" style="display: none;">
+                <button class="collapsible">🔍 Debug Information</button>
+                <div class="content">
+                    <div id="debugDetails" class="log"></div>
+                </div>
+            </div>
+
+            <div id="results" style="display: none;">
+                <div class="section">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">📁 Processing Results</h3>
+                    <div id="fileList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variable to store the latest result for ZIP download
+        let latestResult = null;
+
+        function log(message) {
+            const debugLog = document.getElementById('debugLog');
+            const timestamp = UTILS.formatTimestamp();
+            debugLog.textContent += `[${timestamp}] ${message}\n`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').textContent = MESSAGES.LOG_CLEARED;
+        }
+
+        async function testWebhook() {
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const testResult = document.getElementById('testResult');
+
+            if (!webhookUrl) {
+                testResult.innerHTML = TEMPLATES.missingWebhookResponse();
+                return;
+            }
+
+            log(`Testing webhook: ${webhookUrl}`);
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ test: true })
+                });
+
+                log(`Response status: ${response.status}`);
+                log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+
+                if (response.ok) {
+                    testResult.innerHTML = TEMPLATES.successResponse();
+                    log(MESSAGES.WEBHOOK_TEST_SUCCESS);
+                } else {
+                    const errorText = await response.text();
+                    testResult.innerHTML = TEMPLATES.warningResponse(response.status);
+                    log(`Response body: ${errorText}`);
+                }
+
+            } catch (error) {
+                testResult.innerHTML = TEMPLATES.errorResponse(error.message);
+                log(`${MESSAGES.WEBHOOK_TEST_FAILED}: ${error.message}`);
+
+                if (error.message.includes('fetch')) {
+                    log(MESSAGES.NETWORK_ERROR);
+                    MESSAGES.CORS_SOLUTIONS.forEach(solution => log(solution));
+                }
+            }
+        }
+
+        // Validate file type when file is selected
+        function validateFileType() {
+            const fileInput = document.getElementById('document');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const fileName = file.name.toLowerCase();
+                const allowedExtensions = ['.html', '.htm'];
+                const isValidFile = allowedExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!isValidFile) {
+                    log(`❌ Invalid file type: ${file.name}`);
+                    log(`⚠️ Only HTML files (.html, .htm) are allowed`);
+                    log(`💡 Please select an HTML file converted from your Word document`);
+                    
+                    // Clear the file input
+                    fileInput.value = '';
+                    
+                    // Hide selected file display
+                    hideSelectedFile();
+                    
+                    // Show error message
+                    alert(`Invalid file type!\n\nOnly HTML files (.html, .htm) are accepted.\n\nSelected file: ${file.name}\n\nPlease select an HTML file converted from your Word document.`);
+                    return false;
+                } else {
+                    log(`✅ Valid HTML file selected: ${file.name}`);
+                    showSelectedFile(file);
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Drag & Drop Functions
+        function allowDrop(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const dropZone = document.getElementById('fileDropZone');
+            dropZone.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                
+                // Check file type
+                const fileName = file.name.toLowerCase();
+                const allowedExtensions = ['.html', '.htm'];
+                const isValidFile = allowedExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!isValidFile) {
+                    log(`❌ Invalid file type dropped: ${file.name}`);
+                    log(`⚠️ Only HTML files (.html, .htm) are allowed`);
+                    alert(`Invalid file type!\n\nOnly HTML files (.html, .htm) are accepted.\n\nDropped file: ${file.name}\n\nPlease drag an HTML file converted from your Word document.`);
+                    return;
+                }
+                
+                // Set file to hidden input
+                const fileInput = document.getElementById('document');
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                log(`✅ Valid HTML file dropped: ${file.name}`);
+                showSelectedFile(file);
+            }
+        }
+
+        function triggerFileSelect() {
+            document.getElementById('document').click();
+        }
+
+        function showSelectedFile(file) {
+            const display = document.getElementById('selectedFileDisplay');
+            const fileName = document.getElementById('selectedFileName');
+            
+            fileName.textContent = file.name;
+            display.style.display = 'block';
+        }
+
+        function hideSelectedFile() {
+            const display = document.getElementById('selectedFileDisplay');
+            display.style.display = 'none';
+        }
+
+        function clearSelectedFile() {
+            const fileInput = document.getElementById('document');
+            fileInput.value = '';
+            hideSelectedFile();
+            log('🗑️ File selection cleared');
+        }
+
+        // Helper function to get line number from character position
+        function getLineNumber(content, position) {
+            const beforePosition = content.substring(0, position);
+            return beforePosition.split('\n').length;
+        }
+
+        // Helper function to get context with line numbers and formatted code
+        function getContextWithLineNumber(content, position, contextLines = 2) {
+            const lines = content.split('\n');
+            const targetLineIndex = getLineNumber(content, position) - 1; // Convert to 0-based index
+            
+            // Calculate the range of lines to show
+            const startLine = Math.max(0, targetLineIndex - contextLines);
+            const endLine = Math.min(lines.length - 1, targetLineIndex + contextLines);
+            
+            // Build the formatted context with line numbers on the same line
+            let formattedContext = '';
+            for (let i = startLine; i <= endLine; i++) {
+                const lineNumber = (i + 1).toString().padStart(3, ' '); // 3-digit line numbers
+                const indicator = i === targetLineIndex ? '→' : ' '; // Arrow points to the problem line
+                const line = (lines[i] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // Escape HTML
+                
+                // Add special formatting for the problem line
+                if (i === targetLineIndex) {
+                    formattedContext += `<span style="color: #f56565; font-weight: bold;">${lineNumber}${indicator}</span> ${line}\n`;
+                } else {
+                    formattedContext += `<span style="color: #a0aec0;">${lineNumber}${indicator}</span> ${line}\n`;
+                }
+            }
+            
+            return {
+                lineNumber: targetLineIndex + 1, // Convert back to 1-based
+                context: content.substring(Math.max(0, position - 50), position + 100).replace(/\n/g, ' '), // Single line context for backwards compatibility
+                formattedContext: formattedContext.trim() // Multi-line context with line numbers
+            };
+        }
+
+        // Client-side style tag validation function
+        function validateStyleTags(htmlContent) {
+            const errors = [];
+            const warnings = [];
+            
+            log('🔍 Validating style tags in HTML content...');
+            
+            // Find all style opening tags - handle P-wrapped first, then unwrapped only if not already found
+            const openingTags = [];
+            const usedPositions = new Set();
+            
+            // First, find P-wrapped opening tags
+            const pWrappedOpeningPattern = /<p>\s*\[\[style:\s*([\w]+)\]\]\s*<\/p>/gi;
+            let match;
+            while ((match = pWrappedOpeningPattern.exec(htmlContent)) !== null) {
+                const styleType = match[1] ? match[1].toLowerCase() : 'unknown';
+                const openingTag = {
+                    type: styleType,
+                    fullMatch: match[0],
+                    position: match.index,
+                    endPosition: match.index + match[0].length,
+                    pattern: 'P-wrapped opening'
+                };
+                openingTags.push(openingTag);
+                // Mark positions as used to avoid duplicate matching
+                const innerStart = match.index + match[0].indexOf('[[style:');
+                const innerEnd = innerStart + match[0].substring(match[0].indexOf('[[style:')).indexOf(']]') + 2;
+                for (let i = innerStart; i <= innerEnd; i++) {
+                    usedPositions.add(i);
+                }
+                log(`✅ Found P-wrapped opening: [[style:${styleType}]] at line ${getLineNumber(htmlContent, openingTag.position)}`);
+            }
+            
+            // Then, find unwrapped opening tags that don't overlap
+            const unwrappedOpeningPattern = /\[\[style:\s*([\w]+)\]\]/gi;
+            const regex2 = new RegExp(unwrappedOpeningPattern.source, unwrappedOpeningPattern.flags);
+            while ((match = regex2.exec(htmlContent)) !== null) {
+                // Check if this position overlaps with P-wrapped tags
+                const isOverlapping = Array.from({length: match[0].length}, (_, i) => match.index + i)
+                    .some(pos => usedPositions.has(pos));
+                
+                if (!isOverlapping) {
+                    const styleType = match[1] ? match[1].toLowerCase() : 'unknown';
+                    const openingTag = {
+                        type: styleType,
+                        fullMatch: match[0],
+                        position: match.index,
+                        endPosition: match.index + match[0].length,
+                        pattern: 'Unwrapped opening'
+                    };
+                    openingTags.push(openingTag);
+                    log(`✅ Found unwrapped opening: [[style:${styleType}]] at line ${getLineNumber(htmlContent, openingTag.position)}`);
+                }
+            }
+            
+            // Find all style closing tags - handle P-wrapped first, then unwrapped
+            const closingTags = [];
+            const usedClosingPositions = new Set();
+            
+            // First, find P-wrapped closing tags
+            const pWrappedClosingPattern = /<p>\s*\[\[\/style\]\]\s*<\/p>/gi;
+            const regex3 = new RegExp(pWrappedClosingPattern.source, pWrappedClosingPattern.flags);
+            while ((match = regex3.exec(htmlContent)) !== null) {
+                const closingTag = {
+                    fullMatch: match[0],
+                    position: match.index,
+                    endPosition: match.index + match[0].length,
+                    pattern: 'P-wrapped closing'
+                };
+                closingTags.push(closingTag);
+                // Mark positions as used
+                const innerStart = match.index + match[0].indexOf('[[/style]]');
+                const innerEnd = innerStart + 10; // length of [[/style]]
+                for (let i = innerStart; i <= innerEnd; i++) {
+                    usedClosingPositions.add(i);
+                }
+                log(`✅ Found P-wrapped closing: [[/style]] at line ${getLineNumber(htmlContent, closingTag.position)}`);
+            }
+            
+            // Then, find unwrapped closing tags that don't overlap
+            const unwrappedClosingPattern = /\[\[\/style\]\]/gi;
+            const regex4 = new RegExp(unwrappedClosingPattern.source, unwrappedClosingPattern.flags);
+            while ((match = regex4.exec(htmlContent)) !== null) {
+                // Check if this position overlaps with P-wrapped tags
+                const isOverlapping = Array.from({length: match[0].length}, (_, i) => match.index + i)
+                    .some(pos => usedClosingPositions.has(pos));
+                
+                if (!isOverlapping) {
+                    const closingTag = {
+                        fullMatch: match[0],
+                        position: match.index,
+                        endPosition: match.index + match[0].length,
+                        pattern: 'Unwrapped closing'
+                    };
+                    closingTags.push(closingTag);
+                    log(`✅ Found unwrapped closing: [[/style]] at line ${getLineNumber(htmlContent, closingTag.position)}`);
+                }
+            }
+            
+            log(`📊 Style tag summary: ${openingTags.length} opening, ${closingTags.length} closing`);
+            
+            // Check for basic count mismatch
+            if (openingTags.length !== closingTags.length) {
+                const errorMsg = `Style tag count mismatch: Found ${openingTags.length} opening tags but ${closingTags.length} closing tags. Each [[style:xxx]] must have a matching [[/style]].`;
+                errors.push(errorMsg);
+                log(`❌ ERROR: ${errorMsg}`);
+            }
+            
+            // Check for proper pairing and structure
+            if (openingTags.length > 0 || closingTags.length > 0) {
+                // Sort both arrays by position
+                openingTags.sort((a, b) => a.position - b.position);
+                closingTags.sort((a, b) => a.position - b.position);
+                
+                // Create combined array of all tags with their positions
+                const allTags = [];
+                
+                // Add opening tags
+                openingTags.forEach(tag => {
+                    allTags.push({ ...tag, tagType: 'opening' });
+                });
+                
+                // Add closing tags
+                closingTags.forEach(tag => {
+                    allTags.push({ ...tag, tagType: 'closing', type: 'closing' });
+                });
+                
+                // Sort all tags by position
+                allTags.sort((a, b) => a.position - b.position);
+                
+                // Process tags using improved stack-based validation
+                const stack = [];
+                const matchedPairs = [];
+                
+                for (let i = 0; i < allTags.length; i++) {
+                    const tag = allTags[i];
+                    
+                    if (tag.tagType === 'opening') {
+                        // Simply push opening tag to stack - we'll check for proper structure later
+                        stack.push(tag);
+                        const lineNumber = getLineNumber(htmlContent, tag.position);
+                        log(`🔍 Found opening: [[style:${tag.type}]] at line ${lineNumber} (position ${tag.position})`);
+                        
+                    } else if (tag.tagType === 'closing') {
+                        if (stack.length === 0) {
+                            // Orphaned closing tag
+                            const contextInfo = getContextWithLineNumber(htmlContent, tag.position);
+                            const errorMsg = {
+                                type: 'orphaned_closing',
+                                message: `Orphaned closing tag: [[/style]] at line ${contextInfo.lineNumber} has no matching opening tag.`,
+                                codeContext: contextInfo.formattedContext
+                            };
+                            errors.push(errorMsg);
+                            log(`❌ ERROR: ${errorMsg.message}`);
+                        } else {
+                            // Match with most recent opening tag (LIFO - Last In, First Out)
+                            const openingTag = stack.pop();
+                            matchedPairs.push({ opening: openingTag, closing: tag });
+                            const openingLineNumber = getLineNumber(htmlContent, openingTag.position);
+                            const closingLineNumber = getLineNumber(htmlContent, tag.position);
+                            log(`✅ Matched: [[style:${openingTag.type}]] (line ${openingLineNumber}) with [[/style]] (line ${closingLineNumber})`);
+                        }
+                    }
+                }
+                
+                // Check for unclosed opening tags (missing closing tags)
+                if (stack.length > 0) {
+                    stack.forEach(unclosedTag => {
+                        const contextInfo = getContextWithLineNumber(htmlContent, unclosedTag.position);
+                        const errorMsg = {
+                            type: 'missing_closing',
+                            message: `Missing closing tag: [[style:${unclosedTag.type}]] at line ${contextInfo.lineNumber} is missing its [[/style]] closing tag.`,
+                            codeContext: contextInfo.formattedContext
+                        };
+                        errors.push(errorMsg);
+                        log(`❌ ERROR: ${errorMsg.message}`);
+                    });
+                }
+                
+                // Check for actual nesting violations (this is separate from missing closing tags)
+                // True nesting would be: [[style:a]][[style:b]][[/style]][[/style]]
+                // We detect this by checking if any opening tag occurs between a matched pair
+                for (let i = 0; i < matchedPairs.length; i++) {
+                    const pair = matchedPairs[i];
+                    const openingPos = pair.opening.position;
+                    const closingPos = pair.closing.position;
+                    
+                    // Check if any other opening tag falls between this pair
+                    for (let j = 0; j < openingTags.length; j++) {
+                        const otherTag = openingTags[j];
+                        if (otherTag !== pair.opening && 
+                            otherTag.position > openingPos && 
+                            otherTag.position < closingPos) {
+                            
+                            // Check if this other tag also has its closing within the same range
+                            let isProperlyNested = false;
+                            for (let k = 0; k < matchedPairs.length; k++) {
+                                const otherPair = matchedPairs[k];
+                                if (otherPair.opening === otherTag && 
+                                    otherPair.closing.position < closingPos) {
+                                    isProperlyNested = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (isProperlyNested) {
+                                // This is actual nesting - not allowed in our style system
+                                const contextInfo = getContextWithLineNumber(htmlContent, otherTag.position);
+                                const errorMsg = {
+                                    type: 'nested_blocks',
+                                    message: `Nested style blocks: [[style:${otherTag.type}]] at line ${contextInfo.lineNumber} is nested inside [[style:${pair.opening.type}]]. Style blocks cannot be nested.`,
+                                    codeContext: contextInfo.formattedContext
+                                };
+                                errors.push(errorMsg);
+                                log(`❌ ERROR: ${errorMsg.message}`);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return { errors, warnings };
+        }
+
+        // Function to display style validation errors with formatted code
+        function showStyleValidationErrors(errors) {
+            // Create modal HTML
+            const modalHtml = `
+                <div id="errorModal" style="
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(0,0,0,0.7); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    z-index: 10000;
+                ">
+                    <div style="
+                        background: white; 
+                        padding: 30px; 
+                        border-radius: 10px; 
+                        max-width: 80vw; 
+                        max-height: 80vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e74c3c; padding-bottom: 15px;">
+                            <h2 style="margin: 0; color: #e74c3c; font-size: 1.5rem;">
+                                ❌ Style Tag Validation Failed
+                            </h2>
+                            <button onclick="closeErrorModal()" style="
+                                background: #e74c3c; 
+                                color: white; 
+                                border: none; 
+                                padding: 8px 15px; 
+                                border-radius: 5px; 
+                                cursor: pointer; 
+                                font-size: 1rem;
+                            ">✖ Close</button>
+                        </div>
+                        <p style="margin-bottom: 20px; color: #333; font-size: 1.1rem;">
+                            Found <strong>${errors.length}</strong> error${errors.length > 1 ? 's' : ''} in your HTML document:
+                        </p>
+                        <div id="errorList"></div>
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #17a2b8;">
+                            <p style="margin: 0; color: #17a2b8; font-weight: bold;">💡 How to fix:</p>
+                            <p style="margin: 5px 0 0 0; color: #333; font-size: 0.95rem;">
+                                Edit your HTML document to fix the issues shown above, then try uploading again.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Populate error list
+            const errorList = document.getElementById('errorList');
+            errors.forEach((error, index) => {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.marginBottom = '25px';
+                errorDiv.style.padding = '15px';
+                errorDiv.style.border = '1px solid #dc3545';
+                errorDiv.style.borderRadius = '5px';
+                errorDiv.style.backgroundColor = '#fff5f5';
+                
+                // Handle structured error object or legacy string format
+                let errorMessage, codeContext;
+                
+                if (typeof error === 'object' && error.message) {
+                    // New structured format
+                    errorMessage = error.message;
+                    codeContext = error.codeContext || '';
+                } else {
+                    // Legacy string format (fallback)
+                    const parts = error.split('\n\nCode context:\n');
+                    errorMessage = parts[0];
+                    codeContext = parts[1] || '';
+                }
+                
+                errorDiv.innerHTML = `
+                    <h4 style="margin: 0 0 10px 0; color: #dc3545; font-size: 1.1rem;">
+                        Error ${index + 1}:
+                    </h4>
+                    <p style="margin: 0 0 15px 0; color: #333; font-size: 1rem; line-height: 1.4;">
+                        ${errorMessage}
+                    </p>
+                    ${codeContext ? `
+                        <div style="margin-top: 15px;">
+                            <p style="margin: 0 0 8px 0; font-weight: bold; color: #495057; font-size: 0.95rem;">Code context:</p>
+                            <pre style="
+                                background: #2d3748; 
+                                border: 1px solid #4a5568; 
+                                border-radius: 6px; 
+                                padding: 16px; 
+                                margin: 0; 
+                                font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+                                font-size: 0.85rem; 
+                                line-height: 1.5; 
+                                color: #e2e8f0;
+                                overflow-x: auto;
+                                white-space: pre;
+                                text-align: left;
+                                tab-size: 4;
+                            ">${codeContext}</pre>
+                        </div>
+                    ` : ''}
+                `;
+                
+                errorList.appendChild(errorDiv);
+            });
+            
+            // Add global close function
+            window.closeErrorModal = function() {
+                const modal = document.getElementById('errorModal');
+                if (modal) {
+                    modal.remove();
+                    delete window.closeErrorModal;
+                }
+            };
+            
+            // Close on background click
+            document.getElementById('errorModal').addEventListener('click', function(e) {
+                if (e.target.id === 'errorModal') {
+                    closeErrorModal();
+                }
+            });
+            
+            // Close on Escape key
+            document.addEventListener('keydown', function escapeHandler(e) {
+                if (e.key === 'Escape') {
+                    closeErrorModal();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            });
+        }
+
+        async function convertDocument() {
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const fileInput = document.getElementById('document');
+            let learningOutcome = ''; // Default empty since input field was removed
+
+            if (!webhookUrl || !fileInput.files[0]) {
+                log(MESSAGES.MISSING_FIELDS);
+                return;
+            }
+
+            // Validate file type before processing
+            if (!validateFileType()) {
+                return;
+            }
+
+            log(MESSAGES.CONVERSION_START);
+
+            try {
+                const file = fileInput.files[0];
+                log(`📄 Reading file: ${file.name} (${file.size} bytes)`);
+
+                const htmlContent = await file.text();
+                log(`✅ File content loaded (${htmlContent.length} characters)`);
+
+                // CLIENT-SIDE STYLE TAG VALIDATION
+                log('🔍 Performing client-side style tag validation...');
+                const validation = validateStyleTags(htmlContent);
+                
+                if (validation.errors.length > 0) {
+                    log('❌ Style tag validation failed!');
+                    log(`Found ${validation.errors.length} error(s):`);
+                    validation.errors.forEach((error, index) => {
+                        log(`${index + 1}. ${error.message || error}`);
+                    });
+                    
+                    // Show detailed error message to user with formatted code
+                    showStyleValidationErrors(validation.errors);
+                    
+                    log('💡 Upload cancelled - please fix style tag issues and try again');
+                    return; // Stop processing here
+                }
+                
+                if (validation.warnings.length > 0) {
+                    log(`⚠️ Style tag validation completed with ${validation.warnings.length} warning(s):`);
+                    validation.warnings.forEach((warning, index) => {
+                        log(`${index + 1}. ${warning}`);
+                    });
+                } else {
+                    log('✅ Style tag validation passed - no errors found');
+                }
+
+                // Auto-detect LO number from filename
+                const loMatch = file.name.match(/LO(\d+)/i);
+                if (loMatch) {
+                    learningOutcome = loMatch[1].padStart(2, '0');
+                    log(`🔍 Auto-detected LO number from filename: ${learningOutcome}`);
+                } else {
+                    log(`💡 No LO number found in filename, workflow will use default`);
+                }
+
+                const payload = {
+                    htmlContent: htmlContent,
+                    fileName: file.name,
+                    learningOutcome: learningOutcome
+                };
+
+                log('📤 Sending to n8n...');
+                log(`Payload size: ${JSON.stringify(payload).length} characters`);
+
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                log(`📥 Response received: ${response.status} ${response.statusText}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                // Debug response structure
+                console.log('=== RESPONSE DEBUG ===');
+                console.log('Full response structure:', result);
+                console.log('Response keys:', Object.keys(result));
+
+                // Check if response is wrapped (common with n8n)
+                let actualData = result;
+                if (result.data) {
+                    console.log('Found data wrapper');
+                    actualData = result.data;
+                } else if (Array.isArray(result) && result.length > 0) {
+                    console.log('Response is array, taking first item');
+                    actualData = result[0];
+                }
+
+                console.log('Actual data keys:', Object.keys(actualData));
+                console.log('Files property type:', typeof actualData.files);
+                console.log('Files property value:', actualData.files);
+                console.log('Files length:', actualData.files ? actualData.files.length : 'undefined');
+
+                // Log to debug panel
+                log('📋 Response structure analysis:');
+                log(`Response keys: ${Object.keys(result).join(', ')}`);
+                log(`Actual data keys: ${Object.keys(actualData).join(', ')}`);
+
+                if (actualData.folderPath) {
+                    log(`✅ Folder-based processing detected`);
+                    log(`Folder path: ${actualData.folderPath}`);
+                    log(`Total files: ${actualData.totalFiles}`);
+                } else if (actualData.files) {
+                    log(`Files property: ${typeof actualData.files} (${actualData.files ? actualData.files.length : 0} items)`);
+                    if (actualData.files && actualData.files.length > 0) {
+                        log(`Sample file structure: ${JSON.stringify(actualData.files[0], null, 2).substring(0, 200)}...`);
+                    }
+                } else {
+                    // Check if this is actually an error response\n                    if (actualData.error || actualData.validation?.status === 'error') {\n                        log(`❌ Validation error detected`);\n                        log(`Error message: ${actualData.validation?.message || actualData.errorInfo?.message || 'Unknown error'}`);\n                        if (actualData.errorInfo?.node) {\n                            log(`Failed at: ${actualData.errorInfo.node}`);\n                        }\n                        if (actualData.errorInfo?.errorType) {\n                            log(`Error type: ${actualData.errorInfo.errorType}`);\n                        }\n                        // Set empty files array for consistent handling\n                        if (!actualData.files) {\n                            actualData.files = [];\n                        }\n                        if (!actualData.folderPath) {\n                            actualData.folderPath = null;\n                        }\n                        if (!actualData.totalFiles) {\n                            actualData.totalFiles = 0;\n                        }\n                    } else {\n                        log('⚠️ Unexpected response format - no files, folderPath, or error info found');\n                        log('Response keys:', Object.keys(actualData).join(', '));\n                    }
+                }
+
+                // Check if processing was successful or had errors\n                if (actualData.error || actualData.success === false) {\n                    log('❌ Processing failed with validation errors');\n                    log(`Error: ${actualData.message || 'Unknown error occurred'}`);\n                    if (actualData.ERROR_INFO) {\n                        log(`Error Type: ${actualData.ERROR_INFO.errorType}`);\n                        log(`Failed at: ${actualData.ERROR_INFO.node}`);\n                    }\n                } else {\n                    log('✅ Conversion successful!');\n                }
+                log(`Generated ${actualData.totalFiles || (actualData.files ? actualData.files.length : 0)} files`);
+
+                // Display results and debug info
+                displayResults(actualData);
+                displayDebugInfo(actualData);
+                initializeCollapsiblesAfterResults();
+
+            } catch (error) {
+                log(`❌ Conversion failed: ${error.message}`);
+
+                if (error.message.includes('fetch') || error.message.includes('NetworkError')) {
+                    log('💡 Network error detected. Possible solutions:');
+                    log('1. Check if n8n workflow is active');
+                    log('2. Verify webhook URL is correct');
+                    log('3. Try using webhook-test URL instead of webhook');
+                    log('4. Check browser console for CORS errors (F12 > Console)');
+                }
+            }
+        }
+
+        function displayResults(result) {
+            // Store result globally for ZIP download
+            latestResult = result;
+
+            const resultsDiv = document.getElementById('results');
+            const fileList = document.getElementById('fileList');
+
+            fileList.innerHTML = '';
+
+            if (result.success && result.folderPath) {
+                // Display folder location and summary
+                const folderInfo = document.createElement('div');
+                folderInfo.style.padding = '20px';
+                folderInfo.style.margin = '10px 0';
+                folderInfo.style.backgroundColor = '#d4edda';
+                folderInfo.style.borderRadius = '5px';
+                folderInfo.style.border = '1px solid #c3e6cb';
+
+                folderInfo.innerHTML = `
+                    <h4>📁 Files Generated Successfully!</h4>
+                    <p><strong>Total Files:</strong> ${result.totalFiles}</p>
+                    <p><strong>TAR archive:</strong> ${result.folderName}.tar</p>
+                    <p><strong>Generated:</strong> ${new Date(result.processingDate).toLocaleString()}</p>
+                    <p>You can click <strong>Generated HTML Files</strong> below to view or download individual HTML files, or download in the <strong>Step 4: Download Results</strong> section.</p>
+                `;
+
+                fileList.appendChild(folderInfo);
+
+                // Display generated HTML files list alphabetically
+                if (result.files && result.files.length > 0) {
+                    const filesListDiv = document.createElement('div');
+                    filesListDiv.style.padding = '20px';
+                    filesListDiv.style.margin = '10px 0';
+                    filesListDiv.style.backgroundColor = '#f8f9fa';
+                    filesListDiv.style.borderRadius = '5px';
+                    filesListDiv.style.border = '1px solid #dee2e6';
+
+                    // Separate files into three categories
+                    const recognizedFiles = [];
+                    const mediaRequestFiles = [];
+                    const problematicFiles = [];
+
+                    result.files.forEach((file, index) => {
+                        file.originalIndex = index;
+
+                        // Check if it's a media/graphic/interactive request file
+                        if (file.fileName.includes('media_graphics_interactive_requests') ||
+                            file.fileName.includes('request-tables')) {
+                            mediaRequestFiles.push(file);
+                        }
+                        // Check if file can be detected as LO/LS/LA file based on naming pattern
+                        else if (file.fileName.match(/^\d{2}_\d{2}_\d{2}_/) ||
+                            file.fileName.includes('learning-outcome') ||
+                            file.fileName.includes('learning-step') ||
+                            file.fileName.includes('learning-activity')) {
+                            recognizedFiles.push(file);
+                        }
+                        // Only add to problematic if it's not a request file AND has no LO/LS/LA info
+                        else {
+                            problematicFiles.push(file);
+                        }
+                    });
+
+                    let filesHTML = '<button class="collapsible" id="filesListToggle">📄 Generated HTML Files <span class="toggle-hint">(Click to show)</span></button>';
+                    filesHTML += '<div class="content">';
+
+                    // Sort recognized files alphabetically
+                    const sortedRecognizedFiles = recognizedFiles.sort((a, b) => a.fileName.localeCompare(b.fileName));
+
+                    if (sortedRecognizedFiles.length > 0) {
+                        filesHTML += '<div style="margin-top: 15px;">';
+                        sortedRecognizedFiles.forEach(file => {
+                            filesHTML += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin: 5px 0; background: white; border-radius: 5px; border: 1px solid #e0e0e0;">
+                                    <div style="flex: 1;">
+                                        <strong>${file.fileName}</strong>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-info" style="padding: 5px 10px; font-size: 0.8rem;" onclick="previewFile(${file.originalIndex})">
+                                            👁️ Preview
+                                        </button>
+                                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="viewFileCode(${file.originalIndex})">
+                                            📝 View Code
+                                        </button>
+                                        <button class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadSingleFile(${file.originalIndex})">
+                                            💾 Download
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        filesHTML += '</div>';
+                    }
+
+                    // Add media request files section if any exist
+                    if (mediaRequestFiles.length > 0) {
+                        const sortedMediaRequestFiles = mediaRequestFiles.sort((a, b) => a.fileName.localeCompare(b.fileName));
+                        filesHTML += '<h5 style="margin-top: 20px; color: #17a2b8;">📋 LO media requests:</h5>';
+                        filesHTML += '<div style="margin-top: 10px;">';
+                        sortedMediaRequestFiles.forEach(file => {
+                            filesHTML += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin: 5px 0; background: #e7f3ff; border-radius: 5px; border: 1px solid #bee5eb;">
+                                    <div style="flex: 1;">
+                                        <strong>${file.fileName}</strong>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-info" style="padding: 5px 10px; font-size: 0.8rem;" onclick="previewFile(${file.originalIndex})">
+                                            👁️ Preview
+                                        </button>
+                                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="viewFileCode(${file.originalIndex})">
+                                            📝 View Code
+                                        </button>
+                                        <button class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadSingleFile(${file.originalIndex})">
+                                            💾 Download
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        filesHTML += '</div>';
+                    }
+
+                    // Add problematic files section if any exist
+                    if (problematicFiles.length > 0) {
+                        const sortedProblematicFiles = problematicFiles.sort((a, b) => a.fileName.localeCompare(b.fileName));
+                        filesHTML += '<h5 style="margin-top: 20px; color: #dc3545;">⚠️ Files with problematic activity header. Double check the Header 1 style in the Word document and convert again.</h5>';
+                        filesHTML += '<div style="margin-top: 10px;">';
+                        sortedProblematicFiles.forEach(file => {
+                            filesHTML += `
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin: 5px 0; background: #fff5f5; border-radius: 5px; border: 1px solid #fed7d7;">
+                                    <div style="flex: 1;">
+                                        <strong>${file.fileName}</strong>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-info" style="padding: 5px 10px; font-size: 0.8rem;" onclick="previewFile(${file.originalIndex})">
+                                            👁️ Preview
+                                        </button>
+                                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="viewFileCode(${file.originalIndex})">
+                                            📝 View Code
+                                        </button>
+                                        <button class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;" onclick="downloadSingleFile(${file.originalIndex})">
+                                            💾 Download
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        filesHTML += '</div>';
+                    }
+
+                    filesListDiv.innerHTML = filesHTML;
+                    fileList.appendChild(filesListDiv);
+                }
+
+
+
+                // Add Step 3: Download section
+                const downloadStepDiv = document.createElement('div');
+                downloadStepDiv.style.padding = '15px';
+                downloadStepDiv.style.margin = '10px 0';
+                downloadStepDiv.style.backgroundColor = '#e7f3ff';
+                downloadStepDiv.style.borderRadius = '5px';
+                downloadStepDiv.style.border = '1px solid #0066cc';
+                downloadStepDiv.style.textAlign = 'center';
+
+                downloadStepDiv.innerHTML = `
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <h3 class="step-title">Download Results</h3>
+                    </div>
+                    <div class="alert alert-success">
+                        <p><strong>✅ Processing Complete!</strong> Choose your download option below.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 1rem 0;">
+                        <button class="btn btn-warning" onclick="downloadAsTar()">
+                            📦 Download TAR Archive (${result.totalFiles} Files)
+                        </button>
+                    </div>
+                    <div id="downloadProgress" style="margin-top: 1rem; display: none;">
+                        <div class="progress-container">
+                            <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <p id="progressText" style="margin: 0.5rem 0; font-size: 0.9rem; color: #666; text-align: center;"></p>
+                    </div>
+                `;
+
+                fileList.appendChild(downloadStepDiv);
+
+
+                resultsDiv.style.display = 'block';
+            } else {
+                // Handle old format or errors
+                const errorDiv = document.createElement('div');
+                errorDiv.style.padding = '20px';
+                errorDiv.style.margin = '10px 0';
+                errorDiv.style.backgroundColor = '#f8d7da';
+                errorDiv.style.borderRadius = '5px';
+                errorDiv.innerHTML = `
+                    <h4>❌ Unexpected Response Format</h4>
+                    <p>The workflow may be using an older format. Check the debug log for details.</p>
+                `;
+                fileList.appendChild(errorDiv);
+                resultsDiv.style.display = 'block';
+            }
+        }
+
+        // Load webhook URL from localStorage if available
+        window.onload = function () {
+            const savedUrl = localStorage.getItem('webhookUrl');
+            if (savedUrl) {
+                document.getElementById('webhookUrl').value = savedUrl;
+            }
+        };
+
+        // Save webhook URL to localStorage
+        document.getElementById('webhookUrl').addEventListener('change', function () {
+            localStorage.setItem('webhookUrl', this.value);
+        });
+
+        // Validate file type immediately when file is selected
+        document.getElementById('document').addEventListener('change', function () {
+            validateFileType();
+        });
+
+        // Bulk download functionality using iframe method for better automation
+        async function downloadAllFiles() {
+            if (!latestResult || !latestResult.files || latestResult.files.length === 0) {
+                log('❌ No files available for download');
+                return;
+            }
+
+            const totalFiles = latestResult.files.length;
+            log(`📥 Starting bulk download of ${totalFiles} files...`);
+            log(`💡 Click "Save" when the first file download appears, then others will download automatically`);
+
+            // Show progress bar
+            const progressDiv = document.getElementById('downloadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            if (progressDiv) {
+                progressDiv.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Preparing downloads...';
+            }
+
+            try {
+                // Create README file first
+                const readmeContent = `# ${latestResult.folderName} - Generated HTML Files
+                
+Generated on: ${new Date().toLocaleString()}
+Total files: ${totalFiles}
+Source: CMP Document Converter
+
+## File Structure:
+${latestResult.files.map(f => `- ${f.fileName} (${f.type})`).join('\\n')}
+
+## Usage:
+These HTML files are ready to be uploaded to Brightspace or your LMS.
+Each file represents a section from your original document.
+
+## Organization:
+Save all files in a folder named: ${latestResult.folderName}
+`;
+
+                // Create all download URLs first
+                const allFiles = [
+                    {
+                        url: window.URL.createObjectURL(new Blob([readmeContent], { type: 'text/plain' })),
+                        filename: 'README.txt',
+                        isBlob: true
+                    },
+                    ...latestResult.files.map(file => ({
+                        url: file.downloadUrl,
+                        filename: file.fileName,
+                        isBlob: false
+                    }))
+                ];
+
+                // Download all files using iframe method
+                await downloadFilesInBatch(allFiles, progressBar, progressText);
+
+                // Complete
+                if (progressBar && progressText) {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = `✅ Complete! Downloaded ${totalFiles + 1} files`;
+                }
+
+                log(`✅ Bulk download complete!`);
+                log(`📁 Create a folder named: ${latestResult.folderName}`);
+                log(`📂 Save all ${totalFiles + 1} files in that folder`);
+                log(`🎯 Files are now ready for Brightspace upload`);
+
+                // Clean up blob URLs
+                allFiles.forEach(file => {
+                    if (file.isBlob) {
+                        window.URL.revokeObjectURL(file.url);
+                    }
+                });
+
+            } catch (error) {
+                log(`❌ Download failed: ${error.message}`);
+                log(`💡 Fallback: Use individual download links below`);
+
+                if (progressDiv) {
+                    progressDiv.style.display = 'none';
+                }
+            }
+        }
+
+        // Download files in batch using iframe method
+        async function downloadFilesInBatch(files, progressBar, progressText) {
+            const totalFiles = files.length;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const progress = ((i + 1) / totalFiles) * 100;
+
+                // Update progress
+                if (progressBar && progressText) {
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `Downloading ${i + 1} of ${totalFiles}: ${file.filename}`;
+                }
+
+                // Use iframe method for automatic download
+                await downloadFileViaIframe(file.url, file.filename);
+
+                log(`📄 Downloaded: ${file.filename}`);
+
+                // Short delay between downloads
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+        }
+
+        // Helper function to download via iframe (better for automation)
+        function downloadFileViaIframe(url, filename) {
+            return new Promise((resolve) => {
+                try {
+                    // Create invisible iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = url;
+
+                    // For blob URLs, we need to trigger the download differently
+                    if (url.startsWith('blob:') || url.startsWith('data:')) {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
+                        link.style.display = 'none';
+
+                        document.body.appendChild(link);
+                        link.click();
+
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                            resolve();
+                        }, 100);
+                    } else {
+                        // For regular URLs, use iframe
+                        document.body.appendChild(iframe);
+
+                        setTimeout(() => {
+                            document.body.removeChild(iframe);
+                            resolve();
+                        }, 500);
+                    }
+
+                } catch (error) {
+                    console.error('Download error:', error);
+                    resolve(); // Continue with next file even if one fails
+                }
+            });
+        }
+
+        // Alternative: Download one combined file with all content
+        function downloadCombinedFile() {
+            if (!latestResult || !latestResult.files || latestResult.files.length === 0) {
+                log('❌ No files available for download');
+                return;
+            }
+
+            log('📄 Creating combined file with all sections...');
+
+            try {
+                // Create combined HTML content
+                let combinedContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${latestResult.folderName} - All Sections</title>
+    <link rel="stylesheet" href="https://online.saskpolytech.ca/shared/sp-template/styles/SP-Global-2015.css">
+    <style>
+        /* Custom styles for media placeholders and specific course content */
+        .media-placeholder {
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        .citation {
+            font-style: italic;
+            color: #666;
+            margin: 10px 0;
+        }
+        
+        /* Responsive embed styling */
+        .embed-responsive {
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .embed-responsive iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        
+        /* Standard video aspect ratio (16:9) */
+        .embed-responsive::before {
+            content: "";
+            display: block;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        
+        /* Ensure embeds are accessible and responsive */
+        @media (max-width: 768px) {
+            .embed-responsive {
+                margin: 15px 0;
+            }
+        }
+        
+        /* Section separation */
+        .section-break {
+            border-top: 3px solid #0066cc;
+            margin: 40px 0 20px 0;
+            padding-top: 20px;
+        }
+        
+        .section-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <main class="course-content">
+        <h1>${latestResult.folderName} - All Sections Combined</h1>
+        <div class="section-info">
+            <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
+            <strong>Total Sections:</strong> ${latestResult.files.length}<br>
+            <strong>Source:</strong> CMP Document Converter<br>
+            <strong>Instructions:</strong> You can copy each section into separate HTML files for Brightspace upload.
+        </div>
+`;
+
+                // Add each section to the combined content
+                latestResult.files.forEach((file, index) => {
+                    // Extract HTML content from base64 data URL
+                    const base64Data = file.downloadUrl.split(',')[1];
+                    const htmlContent = atob(base64Data);
+
+                    // Extract just the content from the body of each file
+                    const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+                    const mainMatch = bodyMatch ? bodyMatch[1].match(/<main[^>]*>([\s\S]*?)<\/main>/i) : null;
+                    const sectionContent = mainMatch ? mainMatch[1] : (bodyMatch ? bodyMatch[1] : 'Content extraction failed');
+
+                    combinedContent += `
+        <div class="section-break">
+            <div class="section-info">
+                <strong>Section ${index + 1}:</strong> ${file.fileName} (${file.type})
+            </div>
+            ${sectionContent}
+        </div>
+`;
+                });
+
+                combinedContent += `
+        <div class="section-break">
+            <div class="section-info">
+                <strong>End of Document</strong><br>
+                To use these sections in Brightspace:
+                <ol>
+                    <li>Copy each section's HTML content</li>
+                    <li>Create individual HTML files</li>
+                    <li>Upload to Brightspace</li>
+                </ol>
+            </div>
+        </div>
+    </main>
+</body>
+</html>`;
+
+                // Create download
+                const blob = new Blob([combinedContent], { type: 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${latestResult.folderName}_COMBINED.html`;
+                link.style.display = 'none';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                window.URL.revokeObjectURL(url);
+
+                log(`✅ Combined file downloaded: ${latestResult.folderName}_COMBINED.html`);
+                log(`📄 This file contains all ${latestResult.files.length} sections in one document`);
+                log(`✂️ You can copy individual sections from this file to create separate HTML files`);
+
+            } catch (error) {
+                log(`❌ Combined file creation failed: ${error.message}`);
+            }
+        }
+
+        // Copy file content to clipboard for easy file creation
+        async function copyFileContent(fileIndex) {
+            if (!latestResult || !latestResult.files || !latestResult.files[fileIndex]) {
+                log('❌ File not found for copying');
+                return;
+            }
+
+            const file = latestResult.files[fileIndex];
+
+            try {
+                // Extract HTML content from base64 data URL
+                const base64Data = file.downloadUrl.split(',')[1];
+                const htmlContent = atob(base64Data);
+
+                // Copy to clipboard
+                await navigator.clipboard.writeText(htmlContent);
+
+                log(`📋 Copied to clipboard: ${file.fileName}`);
+                log(`💡 Create a new file named "${file.fileName}" and paste the content`);
+
+                // Visual feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.backgroundColor = '#28a745';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '#28a745';
+                }, 2000);
+
+            } catch (error) {
+                log(`❌ Copy failed: ${error.message}`);
+                log(`💡 Try using the download button instead`);
+            }
+        }
+
+        // Show/hide file content preview
+        function showFileContent(fileIndex) {
+            if (!latestResult || !latestResult.files || !latestResult.files[fileIndex]) {
+                log('❌ File not found for preview');
+                return;
+            }
+
+            const file = latestResult.files[fileIndex];
+            const previewDiv = document.getElementById(`filePreview${fileIndex}`);
+            const iframeContainer = previewDiv.querySelector('.iframe-container');
+
+            if (previewDiv.style.display === 'none') {
+                // Show preview
+                try {
+                    const base64Data = file.downloadUrl.split(',')[1];
+                    const htmlContent = atob(base64Data);
+
+                    // Create iframe to render HTML content
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '400px';
+                    iframe.style.border = '1px solid #ccc';
+                    iframe.style.borderRadius = '3px';
+                    iframe.srcdoc = htmlContent;
+
+                    // Clear container and add iframe
+                    iframeContainer.innerHTML = '';
+                    iframeContainer.appendChild(iframe);
+
+                    previewDiv.style.display = 'block';
+
+                    // Update button text
+                    const button = event.target;
+                    button.textContent = '🙈 Hide';
+
+                    log(`👁️ Showing rendered preview: ${file.fileName}`);
+
+                } catch (error) {
+                    log(`❌ Preview failed: ${error.message}`);
+                }
+            } else {
+                // Hide preview
+                previewDiv.style.display = 'none';
+
+                // Update button text
+                const button = event.target;
+                button.textContent = '👁️ Preview';
+
+                log(`🙈 Hidden preview: ${file.fileName}`);
+            }
+        }
+
+        // Display debug information including validation errors
+        function displayDebugInfo(result) {
+            const debugDiv = document.getElementById('debugInfo');
+            const debugDetails = document.getElementById('debugDetails');
+
+            // Check if there are validation errors to display
+            if (result.error || result.validation?.status === 'error' || result.errorInfo) {
+                debugDiv.style.display = 'block';
+
+                let debugContent = '<h4>🚨 Validation Error Details</h4>';
+
+                const errorInfo = result.errorInfo || result.validation?.errorDetails || {};
+
+                if (errorInfo.message) {
+                    debugContent += `<div class="error-section">
+                        <h5>Error Message:</h5>
+                        <p class="error-message">${errorInfo.message}</p>
+                    </div>`;
+                }
+
+                if (errorInfo.node) {
+                    debugContent += `<div class="error-section">
+                        <h5>Failed at:</h5>
+                        <p>${errorInfo.node}</p>
+                    </div>`;
+                }
+
+                if (errorInfo.errorType) {
+                    debugContent += `<div class="error-section">
+                        <h5>Error Type:</h5>
+                        <p>${errorInfo.errorType}</p>
+                    </div>`;
+                }
+
+                if (errorInfo.timestamp) {
+                    debugContent += `<div class="error-section">
+                        <h5>Timestamp:</h5>
+                        <p>${new Date(errorInfo.timestamp).toLocaleString()}</p>
+                    </div>`;
+                }
+
+                if (errorInfo.inputStructure) {
+                    debugContent += `<div class="error-section">
+                        <h5>Input Analysis:</h5>
+                        <ul>`;
+                    Object.entries(errorInfo.inputStructure).forEach(([key, value]) => {
+                        const status = value ? '✅' : '❌';
+                        debugContent += `<li>${status} ${key}: ${value}</li>`;
+                    });
+                    debugContent += `</ul></div>`;
+                }
+
+                if (errorInfo.troubleshooting && Array.isArray(errorInfo.troubleshooting)) {
+                    debugContent += `<div class="error-section">
+                        <h5>💡 Troubleshooting Steps:</h5>
+                        <ol>`;
+                    errorInfo.troubleshooting.forEach(step => {
+                        debugContent += `<li>${step}</li>`;
+                    });
+                    debugContent += `</ol></div>`;
+                }
+
+                debugDetails.innerHTML = debugContent;
+
+                // Add error styling
+                debugDetails.style.backgroundColor = '#fff5f5';
+                debugDetails.style.border = '2px solid #fed7d7';
+                debugDetails.style.borderRadius = '8px';
+                debugDetails.style.padding = '15px';
+
+            } else if (result.validation?.status === 'success') {
+                // Show success validation info
+                debugDiv.style.display = 'block';
+
+                let debugContent = '<h4>✅ Validation Success</h4>';
+                debugContent += `<div class="success-section">
+                    <p><strong>Status:</strong> ${result.validation.message}</p>
+                    <p><strong>Content Size:</strong> ${result.validation.contentSize ? Math.round(result.validation.contentSize / 1024) + ' KB' : 'N/A'}</p>
+                    <p><strong>Timestamp:</strong> ${new Date(result.validation.timestamp).toLocaleString()}</p>
+                </div>`;
+
+                if (result.debugInfo && result.debugInfo.length > 0) {
+                    debugContent += `<div class="success-section">
+                        <h5>📋 Section Processing:</h5>
+                        <ul>`;
+                    result.debugInfo.slice(0, 5).forEach((debug, index) => {
+                        debugContent += `<li><strong>${debug.title}</strong> → ${debug.fileName} (${debug.patternMatched})</li>`;
+                    });
+                    if (result.debugInfo.length > 5) {
+                        debugContent += `<li><em>... and ${result.debugInfo.length - 5} more sections</em></li>`;
+                    }
+                    debugContent += `</ul></div>`;
+                }
+
+                debugDetails.innerHTML = debugContent;
+
+                // Add success styling
+                debugDetails.style.backgroundColor = '#f0fff4';
+                debugDetails.style.border = '2px solid #9ae6b4';
+                debugDetails.style.borderRadius = '8px';
+                debugDetails.style.padding = '15px';
+
+            } else {
+                // Hide debug section if no relevant info
+                debugDiv.style.display = 'none';
+            }
+        }
+
+        // Create TAR file - alternative to ZIP that might bypass Windows security
+        function downloadAsTar() {
+            if (!latestResult || !latestResult.files || latestResult.files.length === 0) {
+                log('❌ No files available for TAR download');
+                return;
+            }
+
+            log('📦 Creating TAR archive (Windows-friendly alternative to ZIP)...');
+
+            try {
+                const folderName = latestResult.folderName;
+                const tarData = [];
+
+                // Create README file content
+                const readmeContent = `# ${folderName} - Generated HTML Files
+                
+Generated on: ${new Date().toLocaleString()}
+Total files: ${latestResult.files.length}
+Source: CMP Document Converter
+
+## File Structure:
+${latestResult.files.map(f => `- ${f.fileName} (${f.type})`).join('\n')}
+
+## Usage:
+These HTML files are ready to be uploaded to Brightspace or your LMS.
+Each file represents a section from your original document.
+
+## Organization:
+All files are contained in the ${folderName} folder structure.
+
+## Extraction:
+Use 7-Zip, WinRAR, or similar tool to extract this TAR archive.
+`;
+
+                // Add README to TAR
+                addFileToTar(tarData, 'README.txt', readmeContent);
+                log('📄 Added README.txt to TAR');
+
+                // Add each HTML file to TAR
+                latestResult.files.forEach(file => {
+                    // Extract HTML content from base64 data URL
+                    const base64Data = file.downloadUrl.split(',')[1];
+                    const htmlContent = atob(base64Data);
+
+                    // Add file to TAR with folder structure
+                    addFileToTar(tarData, `${folderName}/${file.fileName}`, htmlContent);
+                    log(`📄 Added to TAR: ${file.fileName}`);
+                });
+
+                // Add TAR end-of-archive marker (two 512-byte zero blocks)
+                tarData.push(new Uint8Array(512));
+                tarData.push(new Uint8Array(512));
+
+                log('🔄 Generating TAR file...');
+
+                // Create TAR file blob
+                const tarBlob = new Blob(tarData, { type: 'application/x-tar' });
+
+                // Download TAR file
+                const downloadUrl = window.URL.createObjectURL(tarBlob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = `${folderName}.tar`;
+                downloadLink.style.display = 'none';
+
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                window.URL.revokeObjectURL(downloadUrl);
+
+                log(`✅ TAR download started: ${folderName}.tar`);
+                log(`📦 TAR contains ${latestResult.files.length} files + README in ${folderName} folder`);
+                log(`🔧 Extract with 7-Zip, WinRAR, or similar tool`);
+                log(`💡 TAR format is less likely to be blocked by Windows security`);
+
+            } catch (error) {
+                log(`❌ TAR creation failed: ${error.message}`);
+                log(`💡 Fallback: Use individual download links below`);
+            }
+        }
+
+        // Helper function to add a file to TAR data
+        function addFileToTar(tarData, fileName, content) {
+            const fileData = new TextEncoder().encode(content);
+            const header = createTarHeader(fileName, fileData.length);
+
+            tarData.push(header);
+            tarData.push(fileData);
+
+            // Pad to 512-byte boundary
+            const padding = 512 - (fileData.length % 512);
+            if (padding !== 512) {
+                tarData.push(new Uint8Array(padding));
+            }
+        }
+
+        // Create TAR header (512 bytes)
+        function createTarHeader(fileName, fileSize) {
+            const header = new Uint8Array(512);
+            const encoder = new TextEncoder();
+
+            // File name (100 bytes)
+            const nameBytes = encoder.encode(fileName);
+            header.set(nameBytes.slice(0, 100), 0);
+
+            // File mode (8 bytes) - 644 in octal
+            const mode = '0000644\0';
+            header.set(encoder.encode(mode), 100);
+
+            // Owner ID (8 bytes)
+            const uid = '0000000\0';
+            header.set(encoder.encode(uid), 108);
+
+            // Group ID (8 bytes)
+            const gid = '0000000\0';
+            header.set(encoder.encode(gid), 116);
+
+            // File size (12 bytes)
+            const size = fileSize.toString(8).padStart(11, '0') + '\0';
+            header.set(encoder.encode(size), 124);
+
+            // Modification time (12 bytes)
+            const mtime = Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + '\0';
+            header.set(encoder.encode(mtime), 136);
+
+            // Type flag (1 byte) - regular file
+            header[156] = 48; // '0' for regular file
+
+            // Calculate and set checksum
+            const checksum = calculateTarChecksum(header);
+            const checksumStr = checksum.toString(8).padStart(6, '0') + '\0 ';
+            header.set(encoder.encode(checksumStr), 148);
+
+            return header;
+        }
+
+        // Calculate TAR checksum
+        function calculateTarChecksum(header) {
+            // Clear checksum field for calculation
+            for (let i = 148; i < 156; i++) {
+                header[i] = 32; // space character
+            }
+
+            let sum = 0;
+            for (let i = 0; i < 512; i++) {
+                sum += header[i];
+            }
+
+            return sum;
+        }
+
+        // Helper function to create HTML for individual files
+        function createFileHTML(file) {
+            return `
+                <div style="margin: 12px 0; padding: 1.2rem; background: var(--white); border-radius: var(--border-radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); transition: var(--transition);" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-hover)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)'">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                        <strong style="color: var(--primary-color); font-size: 1.1rem;">${file.fileName}</strong>
+                        <span style="background: var(--light-bg); color: #666; padding: 0.25rem 0.75rem; border-radius: var(--border-radius); font-size: 0.85em; font-weight: 500;">${file.type}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="${file.downloadUrl}" 
+                           download="${file.fileName}" 
+                           class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                           💾 Download
+                        </a>
+                        <button onclick="copyFileContent(${file.originalIndex})" 
+                                class="btn btn-success" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            📋 Copy HTML
+                        </button>
+                        <button onclick="showFileContent(${file.originalIndex})" 
+                                class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            👁️ Preview
+                        </button>
+                    </div>
+                    <div id="filePreview${file.originalIndex}" style="display: none; margin-top: 1rem; background: var(--light-bg); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--border-color);">
+                        <div class="iframe-container" style="width: 100%; min-height: 400px;"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize collapsible sections
+        document.addEventListener('DOMContentLoaded', function () {
+            // This will be called after the DOM is loaded
+            initializeCollapsibles();
+        });
+
+        // Function to initialize collapsible sections
+        function initializeCollapsibles() {
+            const collapsibles = document.querySelectorAll('.collapsible');
+            let newInitializations = 0;
+            
+            collapsibles.forEach(function (collapsible) {
+                // Check if this element already has the collapsible functionality
+                if (!collapsible.hasAttribute('data-collapsible-initialized')) {
+                    // Mark as initialized to prevent duplicate event listeners
+                    collapsible.setAttribute('data-collapsible-initialized', 'true');
+                    newInitializations++;
+                    
+                    collapsible.addEventListener('click', function () {
+                        this.classList.toggle('active');
+                        const content = this.nextElementSibling;
+                        content.classList.toggle('active');
+
+                        // Handle dynamic text for files list toggle
+                        if (this.id === 'filesListToggle') {
+                            const hintSpan = this.querySelector('.toggle-hint');
+                            if (hintSpan) {
+                                if (this.classList.contains('active')) {
+                                    hintSpan.textContent = '(Click to hide)';
+                                } else {
+                                    hintSpan.textContent = '(Click to show)';
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Debug logging for verification
+            if (newInitializations > 0) {
+                console.log(`🔧 Initialized ${newInitializations} new collapsible elements (${collapsibles.length} total found)`);
+            }
+        }
+
+        // Call initializeCollapsibles when results are displayed
+        function initializeCollapsiblesAfterResults() {
+            setTimeout(initializeCollapsibles, 100);
+        }
+
+        // Functions for individual file operations
+        function previewFile(index) {
+            if (!latestResult || !latestResult.files || !latestResult.files[index]) {
+                log('❌ File not found for preview');
+                return;
+            }
+
+            const file = latestResult.files[index];
+            const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+
+            if (previewWindow) {
+                // Extract HTML content from base64 data URL or direct content
+                let htmlContent;
+                if (file.downloadUrl && file.downloadUrl.startsWith('data:')) {
+                    const base64Data = file.downloadUrl.split(',')[1];
+                    htmlContent = atob(base64Data);
+                } else if (file.content) {
+                    htmlContent = file.content;
+                } else {
+                    htmlContent = '<p>No content available for preview</p>';
+                }
+
+                previewWindow.document.write(htmlContent);
+                previewWindow.document.close();
+                log(`👁️ Opened preview for: ${file.fileName}`);
+            } else {
+                log('❌ Could not open preview window. Please allow popups for this site.');
+            }
+        }
+
+        function viewFileCode(index) {
+            if (!latestResult || !latestResult.files || !latestResult.files[index]) {
+                log('❌ File not found for code view');
+                return;
+            }
+
+            const file = latestResult.files[index];
+            const codeWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+
+            if (codeWindow) {
+                // Extract HTML content from base64 data URL or direct content
+                let htmlContent;
+                if (file.downloadUrl && file.downloadUrl.startsWith('data:')) {
+                    const base64Data = file.downloadUrl.split(',')[1];
+                    htmlContent = atob(base64Data);
+                } else if (file.content) {
+                    htmlContent = file.content;
+                } else {
+                    htmlContent = 'No content available';
+                }
+
+                codeWindow.document.write('<!DOCTYPE html><html><head><title>Source Code: ' + file.fileName + '</title>');
+                codeWindow.document.write('<style>body{font-family:Consolas,Monaco,monospace;margin:20px;background:#f8f9fa}');
+                codeWindow.document.write('.header{background:#2F5496;color:white;padding:15px;margin:-20px -20px 20px -20px}');
+                codeWindow.document.write('pre{background:white;padding:20px;border-radius:5px;border:1px solid #dee2e6;overflow-x:auto;white-space:pre-wrap}');
+                codeWindow.document.write('.copy-btn{background:#28a745;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-bottom:10px}');
+                codeWindow.document.write('</style></head><body>');
+                codeWindow.document.write('<div class="header"><h2>Source Code: ' + file.fileName + '</h2></div>');
+                codeWindow.document.write('<button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById(\'code\').textContent)">Copy Code</button>');
+                codeWindow.document.write('<pre id="code">' + htmlContent.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>');
+                codeWindow.document.write('</body></html>');
+                codeWindow.document.close();
+                log('Code view opened for: ' + file.fileName);
+            } else {
+                log('Could not open code view window. Please allow popups.');
+            }
+        }
+
+        function downloadSingleFile(index) {
+            if (!latestResult || !latestResult.files || !latestResult.files[index]) {
+                log('❌ File not found for download');
+                return;
+            }
+
+            const file = latestResult.files[index];
+
+            // Extract HTML content from base64 data URL or direct content
+            let htmlContent;
+            if (file.downloadUrl && file.downloadUrl.startsWith('data:')) {
+                const base64Data = file.downloadUrl.split(',')[1];
+                htmlContent = atob(base64Data);
+            } else if (file.content) {
+                htmlContent = file.content;
+            } else {
+                log('❌ No content available for download');
+                return;
+            }
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = file.fileName;
+            downloadLink.style.display = 'none';
+
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            window.URL.revokeObjectURL(url);
+            log(`💾 Downloaded: ${file.fileName}`);
+        }
+    </script>
+</body>
+
+</html>

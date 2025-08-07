@@ -24,11 +24,12 @@ protected void Page_Load(object sender, EventArgs e)
             var serializer = new JavaScriptSerializer();
             dynamic data = serializer.DeserializeObject(requestBody);
             
-            // Valid access codes - Saskatchewan Polytechnic CMP Converter
+            // Valid access codes - REPLACE WITH YOUR ACTUAL CODES
+            // DO NOT COMMIT ACTUAL CODES TO VERSION CONTROL
             string[] validCodes = {
-                "J1an9xi!",           // Primary access code
-                "CMP-2025",           // Secondary access code  
-                "Test-2025"           // Testing/backup access code
+                "YOUR_PRIMARY_CODE_HERE",     // Replace with your primary access code
+                "YOUR_SECONDARY_CODE_HERE",   // Replace with your secondary access code  
+                "YOUR_BACKUP_CODE_HERE"       // Replace with your backup access code
             };
             
             string submittedCode = data["code"].ToString();

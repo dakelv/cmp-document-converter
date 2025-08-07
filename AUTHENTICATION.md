@@ -39,8 +39,9 @@ The following access codes are currently configured:
 ## 📁 Files Modified/Created
 
 ### **New Files:**
-- `api/validate-access.aspx` - Server-side validation endpoint
+- `api-template/validate-access.aspx.template` - Template for server-side validation endpoint
 - `AUTHENTICATION.md` - This documentation file
+- `.gitignore` - Prevents committing sensitive authentication files
 
 ### **Modified Files:**
 - `cmp-doc-converter.html` - Added authentication script and logout link
@@ -50,10 +51,14 @@ The following access codes are currently configured:
 ## 🚀 Deployment Instructions
 
 ### **IIS Server Setup:**
-1. **Upload Files**: Copy all files to your IIS website root
-2. **API Directory**: Ensure `/api/` folder has proper permissions
-3. **ASPX Support**: Verify IIS can execute ASPX pages
-4. **Test Endpoint**: Verify `/api/validate-access.aspx` is accessible
+1. **Create API Directory**: Create `/api/` folder on your IIS server
+2. **Copy Template**: Copy `api-template/validate-access.aspx.template` to `api/validate-access.aspx`
+3. **Configure Codes**: Replace template placeholders with your actual access codes
+4. **Set Permissions**: Ensure `/api/` folder has proper IIS permissions
+5. **ASPX Support**: Verify IIS can execute ASPX pages
+6. **Test Endpoint**: Verify `/api/validate-access.aspx` is accessible
+
+⚠️ **IMPORTANT**: Keep your actual `api/validate-access.aspx` file only on your server - never commit it to Git!
 
 ### **Testing Checklist:**
 - [ ] Clear browser localStorage: `localStorage.clear()`
@@ -65,29 +70,36 @@ The following access codes are currently configured:
 
 ## 🔧 Configuration
 
+### **Initial Setup:**
+1. **Copy Template**: Copy `api-template/validate-access.aspx.template` to `api/validate-access.aspx`
+2. **Replace Placeholders**: Update the template with your actual access codes
+3. **Deploy Securely**: Upload only to your server (never commit actual codes to Git)
+
 ### **Changing Access Codes:**
-Edit `api/validate-access.aspx` and update the `validCodes` array:
+Edit your local `api/validate-access.aspx` file and update the `validCodes` array:
 
 ```csharp
 string[] validCodes = {
-    "NEW_PRIMARY_CODE",
-    "NEW_SECONDARY_CODE", 
-    "NEW_BACKUP_CODE"
+    "YOUR_NEW_PRIMARY_CODE",
+    "YOUR_NEW_SECONDARY_CODE", 
+    "YOUR_NEW_BACKUP_CODE"
 };
 ```
 
 ### **Adding More Codes:**
-Simply add new codes to the array:
+Simply add new codes to the array in your local file:
 
 ```csharp
 string[] validCodes = {
-    "J1an9xi!",
-    "CMP-2025",
-    "Test-2025",
+    "YOUR_PRIMARY_CODE",
+    "YOUR_SECONDARY_CODE",
+    "YOUR_BACKUP_CODE",
     "DEPT_SPECIFIC_CODE",
     "ADDITIONAL_CODE"
 };
 ```
+
+⚠️ **SECURITY WARNING**: Never commit actual access codes to version control!
 
 ### **Enhanced Security (Optional):**
 Store codes in `web.config` for additional security:

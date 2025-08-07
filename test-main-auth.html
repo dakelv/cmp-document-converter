@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Main App Authentication</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .test-button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Main App Authentication Test</h1>
+    <div id="results"></div>
+    
+    <div style="margin: 20px 0;">
+        <button class="test-button" onclick="testMainApp()">🚀 Test Main App Authentication</button>
+        <button class="test-button" onclick="clearAndTest()">🔄 Clear Auth & Test</button>
+    </div>
+    
+    <script src="js/auth-client-side.js"></script>
+    <script src="js/cmp-doc-converter-config.js"></script>
+    <script src="js/cmp-doc-converter-main.js"></script>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        async function testMainApp() {
+            addResult('🔍 Testing main app authentication...', 'info');
+            
+            try {
+                const isAuth = await checkAccess();
+                if (isAuth) {
+                    addResult('✅ Main app authentication successful!', 'success');
+                } else {
+                    addResult('❌ Main app authentication failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Authentication error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAndTest() {
+            addResult('🧹 Clearing authentication...', 'info');
+            localStorage.removeItem('cmp_access_code');
+            if (window.cmpAuth) {
+                window.cmpAuth.clearAuthentication();
+            }
+            addResult('✅ Authentication cleared', 'success');
+            setTimeout(() => testMainApp(), 1000);
+        }
+        
+        // Auto-test on load
+        window.onload = function() {
+            addResult('🚀 Testing authentication integration...', 'info');
+            setTimeout(() => testMainApp(), 500);
+        };
+    </script>
+</body>
+</html></text>
+</invoke>

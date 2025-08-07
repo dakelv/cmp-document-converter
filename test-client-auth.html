@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client-Side Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Client-Side Authentication Test</h1>
+    
+    <div class="test-section info">
+        <h3>Valid Access Codes</h3>
+        <ul>
+            <li><code>J1an9xi!</code> - Primary access code</li>
+            <li><code>CMP-2025</code> - Secondary access code</li>
+            <li><code>Test-2025</code> - Testing/backup access code</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Authentication</h3>
+        <input type="text" id="testCode" placeholder="Enter access code" value="J1an9xi!">
+        <button onclick="testAuth()">Test Code</button>
+        <button onclick="clearAuth()">Clear Auth</button>
+        <div id="authResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Authentication Status</h3>
+        <button onclick="checkStatus()">Check Status</button>
+        <div id="statusResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Debug Log</h3>
+        <button onclick="clearLog()">Clear Log</button>
+        <pre id="debugLog"></pre>
+    </div>
+
+    <script src="js/auth-client-side.js"></script>
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('debugLog');
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').textContent = '';
+        }
+
+        function testAuth() {
+            const code = document.getElementById('testCode').value;
+            const resultDiv = document.getElementById('authResult');
+            
+            if (!code) {
+                resultDiv.innerHTML = '<div class="error"><p>Please enter an access code</p></div>';
+                return;
+            }
+
+            log(`🔍 Testing code: ${code}`);
+            
+            const isValid = window.cmpAuth.validateCode(code);
+            
+            if (isValid) {
+                window.cmpAuth.setAuthenticated(code);
+                resultDiv.innerHTML = '<div class="success"><p>✅ Authentication successful!</p></div>';
+                log('✅ Authentication successful');
+            } else {
+                resultDiv.innerHTML = '<div class="error"><p>❌ Authentication failed</p></div>';
+                log('❌ Authentication failed');
+            }
+        }
+
+        function clearAuth() {
+            window.cmpAuth.clearAuthentication();
+            document.getElementById('authResult').innerHTML = '';
+            document.getElementById('statusResult').innerHTML = '';
+            log('🗑️ Authentication cleared');
+        }
+
+        function checkStatus() {
+            const resultDiv = document.getElementById('statusResult');
+            
+            const isAuth = window.cmpAuth.isAuthenticated();
+            const isExpired = window.cmpAuth.isAuthenticationExpired();
+            
+            let status = '';
+            if (isAuth && !isExpired) {
+                status = '<div class="success"><p>✅ Currently authenticated</p></div>';
+                log('✅ User is authenticated');
+            } else if (isAuth && isExpired) {
+                status = '<div class="error"><p>⏰ Authentication expired</p></div>';
+                log('⏰ Authentication expired');
+            } else {
+                status = '<div class="error"><p>❌ Not authenticated</p></div>';
+                log('❌ User not authenticated');
+            }
+            
+            resultDiv.innerHTML = status;
+        }
+
+        // Initialize
+        window.onload = function() {
+            log('🚀 Client-side authentication test loaded');
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

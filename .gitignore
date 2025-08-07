@@ -1,8 +1,11 @@
-# Security - Do not commit authentication files
-api/
-api/*
-validate-access.aspx
+# Security - Do not commit server-side authentication files
+api/validate-access.aspx
+api/validate-access.php
 *access*.aspx
+*access*.php
+
+# Allow client-side auth (hashed codes only)
+!js/auth-client-side.js
 
 # Environment-specific files
 web.config

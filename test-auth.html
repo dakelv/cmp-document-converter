@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔐 CMP Authentication Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Environment</h3>
+        <p><strong>Current URL:</strong> <span id="currentUrl"></span></p>
+        <p><strong>Expected API URL:</strong> <span id="apiUrl"></span></p>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+    </div>
+
+    <div class="test-section">
+        <h3>Manual Authentication Test</h3>
+        <input type="text" id="testCode" placeholder="Enter access code" value="J1an9xi!">
+        <button onclick="testAuthentication()">Test Code</button>
+        <div id="testResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>API Endpoint Test</h3>
+        <button onclick="testEndpoint()">Test API Endpoint</button>
+        <div id="endpointResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Debug Log</h3>
+        <button onclick="clearLog()">Clear Log</button>
+        <pre id="debugLog"></pre>
+    </div>
+
+    <script>
+        // Initialize page info
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('apiUrl').textContent = window.location.origin + '/api/validate-access.aspx';
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('debugLog');
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').textContent = '';
+        }
+
+        async function testEndpoint() {
+            const resultDiv = document.getElementById('endpointResult');
+            resultDiv.innerHTML = '<p>Testing API endpoints...</p>';
+            
+            log('🔍 Testing API endpoint availability...');
+            
+            const endpoints = [
+                { url: '/api/validate-access.aspx', type: 'ASP.NET' },
+                { url: '/api/validate-access.php', type: 'PHP' }
+            ];
+            
+            let workingEndpoints = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    log(`🔍 Testing ${endpoint.type} endpoint: ${endpoint.url}`);
+                    
+                    const response = await fetch(endpoint.url, {
+                        method: 'GET'
+                    });
+                    
+                    log(`📥 ${endpoint.type} Response status: ${response.status}`);
+                    log(`📥 ${endpoint.type} Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+                    
+                    if (response.status === 405) {
+                        workingEndpoints.push(endpoint);
+                        log(`✅ ${endpoint.type} endpoint is working (405 Method Not Allowed is correct for GET request)`);
+                    } else {
+                        log(`⚠️ ${endpoint.type} unexpected response status: ${response.status}`);
+                    }
+                } catch (error) {
+                    log(`❌ ${endpoint.type} endpoint test failed: ${error.message}`);
+                }
+            }
+            
+            if (workingEndpoints.length > 0) {
+                const endpointList = workingEndpoints.map(e => `${e.type} (${e.url})`).join(', ');
+                resultDiv.innerHTML = `<div class="success"><p>✅ Working endpoints: ${endpointList}</p></div>`;
+            } else {
+                resultDiv.innerHTML = '<div class="error"><p>❌ No working API endpoints found</p></div>';
+                log('💡 Make sure your server supports ASP.NET or PHP and the files exist in the api/ folder');
+            }
+        }
+
+        async function testAuthentication() {
+            const code = document.getElementById('testCode').value;
+            const resultDiv = document.getElementById('testResult');
+            
+            if (!code) {
+                resultDiv.innerHTML = '<div class="error"><p>Please enter an access code</p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Testing authentication...</p>';
+            log(`🔍 Testing authentication with code: ${code.substring(0, 3)}...`);
+
+            const endpoints = [
+                { url: '/api/validate-access.aspx', type: 'ASP.NET' },
+                { url: '/api/validate-access.php', type: 'PHP' }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    log(`🔍 Testing ${endpoint.type} authentication: ${endpoint.url}`);
+                    
+                    const response = await fetch(endpoint.url, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        },
+                        body: JSON.stringify({ code: code })
+                    });
+
+                    log(`📥 ${endpoint.type} Response status: ${response.status}`);
+                    log(`📥 ${endpoint.type} Response ok: ${response.ok}`);
+                    log(`📥 ${endpoint.type} Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        log(`⚠️ ${endpoint.type} - Not returning JSON (got: ${contentType})`);
+                        const text = await response.text();
+                        log(`📥 ${endpoint.type} Response text: ${text.substring(0, 200)}...`);
+                        continue;
+                    }
+
+                    const result = await response.json();
+                    log(`📥 ${endpoint.type} Response data: ${JSON.stringify(result)}`);
+
+                    if (response.ok && result.success) {
+                        resultDiv.innerHTML = `<div class="success"><p>✅ Authentication successful via ${endpoint.type}!</p></div>`;
+                        log(`✅ Authentication test passed via ${endpoint.type}`);
+                        return; // Success, stop testing other endpoints
+                    } else {
+                        resultDiv.innerHTML = `<div class="error"><p>❌ Authentication failed via ${endpoint.type}: ${result.message || 'Unknown error'}</p></div>`;
+                        log(`❌ Authentication test failed via ${endpoint.type}: ${result.message || 'Unknown error'}`);
+                        return; // Got a proper response but auth failed, stop testing
+                    }
+                } catch (error) {
+                    log(`❌ ${endpoint.type} authentication test error: ${error.message}`);
+                    // Continue to next endpoint
+                }
+            }
+
+            // If we get here, all endpoints failed
+            resultDiv.innerHTML = '<div class="error"><p>❌ All authentication endpoints failed</p></div>';
+            log('💡 Troubleshooting suggestions:');
+            log('   1. Make sure your server supports ASP.NET or PHP');
+            log('   2. Verify the api files exist and have correct permissions');
+            log('   3. Check server configuration and error logs');
+            log('   4. Try accessing the API URLs directly in browser');
+        }
+
+        // Auto-test endpoint on page load
+        window.onload = function() {
+            log('🚀 Authentication test page loaded');
+            log('🔍 Auto-testing API endpoint...');
+            testEndpoint();
+        };
+    </script>
+</body>
+</html>

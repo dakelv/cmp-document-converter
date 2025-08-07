@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Authentication & Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .test-button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .clear-button { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear Authentication & Test</h1>
+    <div id="results"></div>
+    
+    <div style="margin: 20px 0;">
+        <button class="test-button clear-button" onclick="clearAllAuth()">🗑️ Clear All Authentication</button>
+        <button class="test-button" onclick="openMainApp()">🚀 Open Main App</button>
+        <button class="test-button" onclick="checkCurrentAuth()">🔍 Check Current Auth Status</button>
+    </div>
+    
+    <script src="js/auth-client-side.js"></script>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function clearAllAuth() {
+            addResult('🧹 Clearing all authentication data...', 'info');
+            
+            // Clear localStorage
+            localStorage.removeItem('cmp_access_code');
+            addResult('✅ Cleared localStorage: cmp_access_code', 'success');
+            
+            // Clear client-side auth if available
+            if (window.cmpAuth) {
+                window.cmpAuth.clearAuthentication();
+                addResult('✅ Cleared client-side authentication', 'success');
+            } else {
+                addResult('ℹ️ Client-side auth not loaded', 'info');
+            }
+            
+            // Clear any other potential auth storage
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessCode');
+            sessionStorage.clear();
+            
+            addResult('🎯 All authentication cleared! Now try opening the main app.', 'success');
+        }
+        
+        function checkCurrentAuth() {
+            addResult('🔍 Checking current authentication status...', 'info');
+            
+            const storedCode = localStorage.getItem('cmp_access_code');
+            if (storedCode) {
+                addResult(`📝 Found stored code: ${storedCode}`, 'info');
+            } else {
+                addResult('❌ No stored access code found', 'info');
+            }
+            
+            if (window.cmpAuth) {
+                const isAuth = window.cmpAuth.isAuthenticated();
+                const isExpired = window.cmpAuth.isAuthenticationExpired();
+                addResult(`🔐 Client-side auth: ${isAuth ? 'Authenticated' : 'Not authenticated'}`, 'info');
+                addResult(`⏰ Auth expired: ${isExpired ? 'Yes' : 'No'}`, 'info');
+            }
+        }
+        
+        function openMainApp() {
+            addResult('🚀 Opening main application...', 'info');
+            window.open('cmp-doc-converter.html', '_blank');
+        }
+        
+        // Auto-check on load
+        window.onload = function() {
+            checkCurrentAuth();
+        };
+    </script>
+</body>
+</html></text>
+</invoke>

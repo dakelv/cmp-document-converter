@@ -1074,20 +1074,169 @@ function initializePage() {
     });
 }
 
-// Initialize when page loads
-window.onload = function() {
-    initializePage();
+// SSO Authentication check
+async function checkSSOAuthentication() {
+    console.log('🔐 Checking SSO authentication...');
     
-    // Set the last updated date in the footer
-    const lastUpdatedElement = document.getElementById('lastUpdated');
-    if (lastUpdatedElement) {
-        const buildDate = new Date('2024-08-05'); // Update this date when making changes
-        lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+    try {
+        const isAuthenticated = await window.ssoAuth.initialize();
+        
+        if (isAuthenticated) {
+            const userInfo = window.ssoAuth.getUserInfo();
+            console.log('✅ SSO Authentication successful:', userInfo.name);
+            
+            // Show user info in header
+            showUserInfo(userInfo);
+            return true;
+        } else {
+            console.log('❌ SSO Authentication required');
+            showLoginPrompt();
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ SSO Authentication error:', error);
+        showAuthError(error.message);
+        return false;
     }
+}
+
+// Show user information in the header
+function showUserInfo(userInfo) {
+    const header = document.querySelector('.header');
+    if (header) {
+        const userDiv = document.createElement('div');
+        userDiv.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 14px;
+        `;
+        userDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>👤 ${userInfo.name}</span>
+                <button onclick="window.ssoAuth.logout()" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                ">Logout</button>
+            </div>
+        `;
+        header.style.position = 'relative';
+        header.appendChild(userDiv);
+    }
+}
+
+// Show login prompt
+function showLoginPrompt() {
+    document.body.innerHTML = `
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+            ">
+                <h1 style="color: #333; margin-bottom: 20px;">🔐 Authentication Required</h1>
+                <h2 style="color: #007bff; margin-bottom: 30px;">CMP Document Converter</h2>
+                <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+                    Please sign in with your Saskatchewan Polytechnic account to access the CMP Document Converter.
+                </p>
+                <button onclick="window.ssoAuth.login()" style="
+                    background: linear-gradient(135deg, #007bff, #0056b3);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🚀 Sign In with Microsoft
+                </button>
+                <p style="color: #888; font-size: 14px; margin-top: 20px;">
+                    Contact Learning Technologies if you need access
+                </p>
+            </div>
+        </div>
+    `;
+}
+
+// Show authentication error
+function showAuthError(errorMessage) {
+    document.body.innerHTML = `
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+            ">
+                <h1 style="color: #dc3545; margin-bottom: 20px;">❌ Authentication Error</h1>
+                <p style="color: #666; margin-bottom: 20px;">${errorMessage}</p>
+                <button onclick="location.reload()" style="
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                ">Try Again</button>
+            </div>
+        </div>
+    `;
+}
+
+// Initialize when page loads
+window.onload = async function() {
+    // Check SSO authentication first
+    const isAuthenticated = await checkSSOAuthentication();
+    
+    if (isAuthenticated) {
+        // Initialize the main application
+        initializePage();
+        
+        // Set the last updated date in the footer
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        if (lastUpdatedElement) {
+            const buildDate = new Date('2025-08-07'); // Updated for SSO implementation
+            lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+    // If not authenticated, the login prompt is already shown by checkSSOAuthentication
 };
 
 // Debug: Log that the script has loaded

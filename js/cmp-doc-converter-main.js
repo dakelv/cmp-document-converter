@@ -1074,279 +1074,169 @@ function initializePage() {
     });
 }
 
-// Custom password dialog function
-function showPasswordDialog() {
-    return new Promise((resolve) => {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+// SSO Authentication check
+async function checkSSOAuthentication() {
+    console.log('🔐 Checking SSO authentication...');
+    
+    try {
+        const isAuthenticated = await window.ssoAuth.initialize();
+        
+        if (isAuthenticated) {
+            const userInfo = window.ssoAuth.getUserInfo();
+            console.log('✅ SSO Authentication successful:', userInfo.name);
+            
+            // Show user info in header
+            showUserInfo(userInfo);
+            return true;
+        } else {
+            console.log('❌ SSO Authentication required');
+            showLoginPrompt();
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ SSO Authentication error:', error);
+        showAuthError(error.message);
+        return false;
+    }
+}
+
+// Show user information in the header
+function showUserInfo(userInfo) {
+    const header = document.querySelector('.header');
+    if (header) {
+        const userDiv = document.createElement('div');
+        userDiv.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 14px;
+        `;
+        userDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>👤 ${userInfo.name}</span>
+                <button onclick="window.ssoAuth.logout()" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                ">Logout</button>
+            </div>
+        `;
+        header.style.position = 'relative';
+        header.appendChild(userDiv);
+    }
+}
+
+// Show login prompt
+function showLoginPrompt() {
+    document.body.innerHTML = `
+        <div style="
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        `;
-
-        // Create dialog box
-        const dialog = document.createElement('div');
-        dialog.style.cssText = `
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        `;
-
-        dialog.innerHTML = `
-            <div style="margin-bottom: 20px;">
-                <h2 style="margin: 0 0 10px 0; color: #333; font-size: 24px;">🔐 Access Required</h2>
-                <p style="margin: 0; color: #666; font-size: 16px;">CMP Document Converter</p>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label for="accessCode" style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">Enter your access code:</label>
-                <input type="password" id="accessCode" placeholder="Access code" style="
-                    width: 100%;
-                    padding: 12px;
-                    border: 2px solid #ddd;
-                    border-radius: 6px;
-                    font-size: 16px;
-                    box-sizing: border-box;
-                    outline: none;
-                    transition: border-color 0.3s;
-                " />
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="submitBtn" style="
-                    background: #007bff;
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+            ">
+                <h1 style="color: #333; margin-bottom: 20px;">🔐 Authentication Required</h1>
+                <h2 style="color: #007bff; margin-bottom: 30px;">CMP Document Converter</h2>
+                <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+                    Please sign in with your Saskatchewan Polytechnic account to access the CMP Document Converter.
+                </p>
+                <button onclick="window.ssoAuth.login()" style="
+                    background: linear-gradient(135deg, #007bff, #0056b3);
                     color: white;
                     border: none;
-                    padding: 12px 24px;
-                    border-radius: 6px;
+                    padding: 15px 30px;
+                    border-radius: 8px;
                     font-size: 16px;
+                    font-weight: 500;
                     cursor: pointer;
-                    transition: background-color 0.3s;
-                ">Submit</button>
-                <button id="cancelBtn" style="
-                    background: #6c757d;
-                    color: white;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 6px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    transition: background-color 0.3s;
-                ">Cancel</button>
-            </div>
-            <p style="margin: 20px 0 0 0; color: #888; font-size: 14px;">
-                Contact Learning Technologies if you need access
-            </p>
-        `;
-
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-
-        const input = dialog.querySelector('#accessCode');
-        const submitBtn = dialog.querySelector('#submitBtn');
-        const cancelBtn = dialog.querySelector('#cancelBtn');
-
-        // Focus on input
-        setTimeout(() => input.focus(), 100);
-
-        // Handle submit
-        const handleSubmit = () => {
-            const code = input.value.trim();
-            document.body.removeChild(overlay);
-            resolve(code || null);
-        };
-
-        // Handle cancel
-        const handleCancel = () => {
-            document.body.removeChild(overlay);
-            resolve(null);
-        };
-
-        // Event listeners
-        submitBtn.addEventListener('click', handleSubmit);
-        cancelBtn.addEventListener('click', handleCancel);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSubmit();
-            if (e.key === 'Escape') handleCancel();
-        });
-
-        // Hover effects
-        submitBtn.addEventListener('mouseenter', () => submitBtn.style.background = '#0056b3');
-        submitBtn.addEventListener('mouseleave', () => submitBtn.style.background = '#007bff');
-        cancelBtn.addEventListener('mouseenter', () => cancelBtn.style.background = '#545b62');
-        cancelBtn.addEventListener('mouseleave', () => cancelBtn.style.background = '#6c757d');
-
-        // Focus effect on input
-        input.addEventListener('focus', () => input.style.borderColor = '#007bff');
-        input.addEventListener('blur', () => input.style.borderColor = '#ddd');
-    });
-}
-
-// Authentication functions
-async function checkAccess() {
-    // Check if already authenticated and not expired
-    if (window.cmpAuth && window.cmpAuth.isAuthenticated() && !window.cmpAuth.isAuthenticationExpired()) {
-        console.log('✅ Already authenticated');
-        return true;
-    }
-
-    // Clear expired authentication
-    if (window.cmpAuth && window.cmpAuth.isAuthenticationExpired()) {
-        window.cmpAuth.clearAuthentication();
-        console.log('⏰ Authentication expired, requesting new code');
-    }
-
-    // Try server-side authentication first
-    const serverAuth = await tryServerAuthentication();
-    if (serverAuth) {
-        return true;
-    }
-
-    // Fallback to client-side authentication
-    console.log('🔄 Server authentication failed, using client-side fallback');
-    return await tryClientSideAuthentication();
-}
-
-async function tryServerAuthentication() {
-    const storedCode = localStorage.getItem('cmp_access_code');
-    if (storedCode && await validateCodeServerSide(storedCode)) {
-        return true;
-    }
-    return false;
-}
-
-async function tryClientSideAuthentication() {
-    console.log('🔐 Starting client-side authentication...');
-    const userCode = await showPasswordDialog();
-    console.log('🔍 User entered code:', userCode ? `"${userCode}" (length: ${userCode.length})` : 'null/empty');
-    
-    if (!userCode) {
-        console.log('❌ No access code provided');
-        showAccessDenied('No access code provided');
-        return false;
-    }
-
-    // Try server-side validation first
-    console.log('🌐 Trying server-side validation...');
-    if (await validateCodeServerSide(userCode)) {
-        console.log('✅ Server-side validation successful');
-        localStorage.setItem('cmp_access_code', userCode);
-        return true;
-    }
-
-    // Fallback to client-side validation
-    console.log('🔄 Server validation failed, trying client-side...');
-    console.log('🔍 window.cmpAuth available:', typeof window.cmpAuth !== 'undefined');
-    
-    if (window.cmpAuth && window.cmpAuth.validateCode(userCode)) {
-        console.log('✅ Client-side authentication successful');
-        window.cmpAuth.setAuthenticated(userCode);
-        return true;
-    }
-
-    console.log('❌ Both server and client-side validation failed');
-    showAccessDenied('Invalid access code');
-    return false;
-}
-
-async function validateCodeServerSide(code) {
-    if (!code || code.trim() === '') return false;
-    
-    const endpoints = ['/api/validate-access.aspx', '/api/validate-access.php'];
-    
-    for (const endpoint of endpoints) {
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                },
-                body: JSON.stringify({ code: code.trim() })
-            });
-            
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    console.log(`✅ Server authentication successful via ${endpoint}`);
-                    return true;
-                }
-            }
-        } catch (error) {
-            // Continue to next endpoint or fallback
-        }
-    }
-    
-    return false;
-}
-
-function showAccessDenied(reason) {
-    document.body.innerHTML = `
-        <div style="text-align: center; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 500px;">
-                <h1 style="color: #dc3545; margin-bottom: 20px; font-size: 2rem;">🔒 Access Denied</h1>
-                <p style="color: #666; font-size: 1.1rem; margin-bottom: 15px;">${reason}</p>
-                <p style="color: #666; margin-bottom: 30px;">Contact <strong>Learning Technologies</strong> at Saskatchewan Polytechnic for access to the CMP Document Converter.</p>
-                <button onclick="location.reload()" style="padding: 12px 24px; background: linear-gradient(135deg, #2F5496, #1F3763); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: transform 0.2s;">
-                    🔄 Try Again
+                    transition: transform 0.2s;
+                    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🚀 Sign In with Microsoft
                 </button>
+                <p style="color: #888; font-size: 14px; margin-top: 20px;">
+                    Contact Learning Technologies if you need access
+                </p>
             </div>
         </div>
     `;
 }
 
-// Clear access code function (for testing/logout)
-function clearAccess() {
-    localStorage.removeItem('cmp_access_code');
-    if (window.cmpAuth) {
-        window.cmpAuth.clearAuthentication();
-    }
-    location.reload();
+// Show authentication error
+function showAuthError(errorMessage) {
+    document.body.innerHTML = `
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        ">
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+            ">
+                <h1 style="color: #dc3545; margin-bottom: 20px;">❌ Authentication Error</h1>
+                <p style="color: #666; margin-bottom: 20px;">${errorMessage}</p>
+                <button onclick="location.reload()" style="
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                ">Try Again</button>
+            </div>
+        </div>
+    `;
 }
 
 // Initialize when page loads
-window.onload = function() {
-    // Check access first, then initialize application
-    checkAccess().then(isAuthenticated => {
-        if (isAuthenticated) {
-            console.log('✅ Authentication successful - Initializing CMP Document Converter');
-            initializePage();
-            
-            // Set the last updated date in the footer
-            const lastUpdatedElement = document.getElementById('lastUpdated');
-            if (lastUpdatedElement) {
-                const buildDate = new Date('2025-08-07'); // Updated for authentication implementation
-                lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-            }
-        } else {
-            console.log('❌ Authentication failed - Access denied');
+window.onload = async function() {
+    // Check SSO authentication first
+    const isAuthenticated = await checkSSOAuthentication();
+    
+    if (isAuthenticated) {
+        // Initialize the main application
+        initializePage();
+        
+        // Set the last updated date in the footer
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        if (lastUpdatedElement) {
+            const buildDate = new Date('2025-08-08'); // Updated for Azure AD SSO implementation v2.5.0
+            lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
-    }).catch(error => {
-        console.error('Authentication error:', error);
-        document.body.innerHTML = `
-            <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-                <h1 style="color: #dc3545;">Authentication Error</h1>
-                <p>Unable to verify access. Please try again or contact Learning Technologies.</p>
-                <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
-            </div>
-        `;
-    });
+    }
+    // If not authenticated, the login prompt is already shown by checkSSOAuthentication
 };
 
 // Debug: Log that the script has loaded

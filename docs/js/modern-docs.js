@@ -104,30 +104,14 @@ class ModernDocsHub {
     }
 
     setupThemeToggle() {
-        const themeToggle = document.querySelector('.theme-toggle');
-        if (!themeToggle) return;
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            // Update icon
-            themeToggle.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
-        });
+        // Theme toggle disabled - light theme only
+        return;
     }
 
     initializeTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        const themeToggle = document.querySelector('.theme-toggle');
-        
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        
-        if (themeToggle) {
-            themeToggle.innerHTML = savedTheme === 'dark' ? '☀️' : '🌙';
-        }
+        // Force light theme only
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
     }
 
     setupCopyButtons() {

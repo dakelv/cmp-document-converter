@@ -1104,31 +1104,20 @@ async function checkSSOAuthentication() {
 function showUserInfo(userInfo) {
     const header = document.querySelector('.header');
     if (header) {
+        // Remove any existing user info to prevent duplicates
+        const existingUserInfo = header.querySelector('.user-info-container');
+        if (existingUserInfo) {
+            existingUserInfo.remove();
+        }
+        
         const userDiv = document.createElement('div');
-        userDiv.style.cssText = `
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-size: 14px;
-        `;
+        userDiv.className = 'user-info-container';
         userDiv.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span>👤 ${userInfo.name}</span>
-                <button onclick="window.ssoAuth.logout()" style="
-                    background: #dc3545;
-                    color: white;
-                    border: none;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                ">Logout</button>
+            <div class="user-info-content">
+                <span class="user-name">👤 ${userInfo.name}</span>
             </div>
         `;
+        
         header.style.position = 'relative';
         header.appendChild(userDiv);
     }
@@ -1228,7 +1217,7 @@ window.onload = async function() {
         // Set the last updated date in the footer
         const lastUpdatedElement = document.getElementById('lastUpdated');
         if (lastUpdatedElement) {
-            const buildDate = new Date('2025-08-08'); // Updated for Azure AD SSO implementation v2.5.0
+            const buildDate = new Date(); // Automatically uses current date
             lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',

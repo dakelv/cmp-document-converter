@@ -483,12 +483,13 @@ body {
 /* Progress indicator */
 .progress-container {
     position: fixed;
-    top: var(--header-height);
+    top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 4px;
     background: var(--bg-tertiary);
-    z-index: 998;
+    z-index: 1001;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .progress-bar {
@@ -496,6 +497,7 @@ body {
     background: linear-gradient(90deg, var(--primary-color), var(--success-color));
     width: 0%;
     transition: width 0.1s ease;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
 }
 
 /* Main content with top navigation only */

@@ -1228,7 +1228,7 @@ window.onload = async function() {
         // Set the last updated date in the footer
         const lastUpdatedElement = document.getElementById('lastUpdated');
         if (lastUpdatedElement) {
-            const buildDate = new Date('2025-08-07'); // Updated for SSO implementation
+            const buildDate = new Date('2025-08-08'); // Updated for Azure AD SSO implementation v2.5.0
             lastUpdatedElement.textContent = buildDate.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',

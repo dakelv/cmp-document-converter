@@ -38,6 +38,7 @@ const SSO_CONFIG = {
     app: {
         name: 'CMP Document Converter',
         version: '2.5.0',
+        releaseDate: '2025-08-08',
         environment: 'production' // or 'development', 'staging'
     }
 };

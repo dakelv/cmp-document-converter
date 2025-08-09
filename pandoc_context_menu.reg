@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.docx\Shell\ConvertToHTML]
+@="Convert to HTML with Pandoc"
+"Icon"="%SystemRoot%\\System32\\shell32.dll,23"
+
+[HKEY_CLASSES_ROOT\.docx\Shell\ConvertToHTML\command]
+@="\"C:\\Program Files\\Pandoc\\pandoc.exe\" -s \"%1\" -o \"%~n1.html\" --extract-media=\"%~dp1media\" --ascii"

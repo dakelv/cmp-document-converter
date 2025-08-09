@@ -1,0 +1,51 @@
+{
+  "name": "CMP Document Converter (With Code Style + Auto-Indent + Copy Button + Conditional Prism Loading)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmp-document-upload",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "cmp-document-upload"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract uploaded HTML document from webhook with basic validation\nconst input = $input.first().json;\n\nconsole.log('=== WEBHOOK DEBUG START ===');\nconsole.log('Full input keys:', Object.keys(input));\nconsole.log('Input type:', typeof input);\n\n// Extract HTML document data and metadata\nlet htmlContent, fileName, learningOutcome;\n\n// Check if data is nested in body\nif (input.body) {\n  console.log('Found input.body, checking contents...');\n  htmlContent = input.body.htmlContent;\n  fileName = input.body.fileName;\n  learningOutcome = input.body.learningOutcome;\n  console.log('From body - htmlContent length:', htmlContent ? htmlContent.length : 'null/undefined');\n  console.log('From body - fileName:', fileName);\n  console.log('From body - learningOutcome:', learningOutcome);\n} else {\n  console.log('No input.body found, checking top level...');\n  htmlContent = input.htmlContent;\n  fileName = input.fileName;\n  learningOutcome = input.learningOutcome;\n  console.log('From top level - htmlContent length:', htmlContent ? htmlContent.length : 'null/undefined');\n  console.log('From top level - fileName:', fileName);\n  console.log('From top level - learningOutcome:', learningOutcome);\n}\n\n// Basic validation\nif (!htmlContent) {\n  console.log('ERROR: No HTML content found!');\n  return {\n    success: false,\n    error: true,\n    message: 'No HTML document content found in upload',\n    files: [],\n    totalFiles: 0,\n    validation: {\n      status: 'error',\n      message: 'No HTML content provided',\n      timestamp: new Date().toISOString()\n    }\n  };\n}\n\n// Set defaults\nfileName = fileName || 'uploaded-document.html';\nconsole.log('Final fileName:', fileName);\n\n// Enhanced LO detection\nif (!learningOutcome) {\n  console.log('No LO provided, attempting auto-detection...');\n  const contentLoMatch = htmlContent ? htmlContent.match(/<h1[^>]*>.*?LO\\\\s*(\\\\d+)/i) : null;\n  if (contentLoMatch) {\n    learningOutcome = contentLoMatch[1].padStart(2, '0');\n    console.log('Auto-detected LO from content:', learningOutcome);\n  } else {\n    const filenameLoMatch = fileName ? fileName.match(/LO(\\\\d+)/i) : null;\n    if (filenameLoMatch) {\n      learningOutcome = filenameLoMatch[1].padStart(2, '0');\n      console.log('Auto-detected LO from filename:', learningOutcome);\n    } else {\n      learningOutcome = '01';\n      console.log('Using default LO:', learningOutcome);\n    }\n  }\n} else {\n  learningOutcome = learningOutcome.padStart(2, '0');\n  console.log('Using provided LO:', learningOutcome);\n}\n\n// OPTIMIZATION: Check for [[style:code]] in input HTML to enable conditional Prism.js loading\nconst hasCodeBlocks = htmlContent && (\n  htmlContent.includes('[[style:code]]') || \n  htmlContent.includes('[[style: code]]') ||\n  /<p>\\\\s*\\\\[\\\\[style:\\\\s*code\\\\]\\\\]\\\\s*<\\\\/p>/i.test(htmlContent)\n);\n\nconsole.log('=== CODE DETECTION ===');\nconsole.log('Code blocks detected in input:', hasCodeBlocks ? 'YES - Prism.js will be loaded' : 'NO - Prism.js will NOT be loaded');\n\nconsole.log('=== FINAL EXTRACTION RESULTS ===');\nconsole.log('htmlContent found:', !!htmlContent);\nconsole.log('htmlContent length:', htmlContent ? htmlContent.length : 'N/A');\nconsole.log('fileName:', fileName);\nconsole.log('learningOutcome:', learningOutcome);\nconsole.log('hasCodeBlocks:', hasCodeBlocks);\nconsole.log('=== WEBHOOK DEBUG END ===');\n\nreturn {\n  htmlContent: htmlContent,\n  fileName: fileName,\n  learningOutcome: learningOutcome,\n  hasCodeBlocks: hasCodeBlocks\n};"
+      },
+      "id": "2",
+      "name": "Process Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-07-23T00:00:00.000Z",
+  "versionId": "1"
+}
